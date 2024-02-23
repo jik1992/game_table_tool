@@ -10,7 +10,7 @@ type IProps = {};
 
 type IState = {
     csvResult: string
-    options: {
+    allFiles: {
         [key: string]: {
             owner: string,
             data: string[][]
@@ -56,7 +56,7 @@ export class App extends React.PureComponent<IProps, IState> {
     state: IState = {
         csvResult: '',
         fileCount: 0,
-        options: {},
+        allFiles: {},
         selected: {},
         optionsA: [],
         optionsB: [],
@@ -77,67 +77,28 @@ export class App extends React.PureComponent<IProps, IState> {
                     height: 100,
                 }}
                 showUploadList={false}
-                onChange={(info: UploadChangeParam) => {
-                    const fileName = info.file.name
-                    const a = _.cloneDeep(this.state.options)
-                    if (fileName in a) {
-                        return
+                beforeUpload={(file, FileList) => {
+                    const fileName = file.name
+                    const allFiles = _.cloneDeep(this.state.allFiles)
+                    if (fileName in allFiles || !fileName) {
+                        return false;
                     }
-
                     const reader = new FileReader()
-                    // @ts-ignore
-                    reader.readAsText(info.file.originFileObj)
+                    reader.readAsText(file)
                     reader.onload = () => {
-                        // 解析 CSV 文件
                         const csv = reader.result as string;
                         if (!csv || !fileName) return;
-
-
-                        const lines = csv.split('\n');
-                        const shows: number[] = []
-                        let headers = lines[0].split(',');
-                        headers = headers.filter((value, index) => {
-                            if (availableColumns.includes(value.trim())) {
-                                shows.push(index)
-                                return true
-                            }
-                            return false
-                        })
-                        const data = lines.slice(1).map(line => {
-                            let lines = line.split(',')
-                            lines[3] = String(Number.parseInt(lines[3]) + Number.parseInt(lines[4]))
-                            lines[7] = String(Number.parseInt(lines[7]) + Number.parseInt(lines[8]))
-                            lines = lines.filter((value, index) => {
-                                return shows.includes(index);
-                            })
-                            return lines
-                        });
-                        // 渲染表格
-                        const outputHtml = `
-                        <thead>
-                          <tr>
-                            ${headers.map(header => `<th>${header}</th>`).join('')}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          ${data.map(row => `
-                            <tr>
-                              ${row.map(cell => `<td>${cell}</td>`).join('')}
-                            </tr>
-                          `).join('')}
-                        </tbody>
-                    `;
-                        a[fileName] = {
+                        const {headers, data} = this.extracted(csv);
+                        // this.renderDebugInfo(headers, data);
+                        allFiles[fileName] = {
                             owner: data[0][0],
                             data: data
                         }
-                        this.setState({options: a})
-                        this.setState({
-                            csvResult: outputHtml
-                        })
-                    }
+                        this.setState({allFiles})
 
-                }} name="files" multiple={true}>
+                    }
+                }}
+                name="files" multiple={true}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined/>
                 </p>
@@ -157,9 +118,9 @@ export class App extends React.PureComponent<IProps, IState> {
                     options={this.getOptions()}
                     onChange={(value, option) => {
                         const a: string[] = []
-                        for (const key of Object.keys(this.state.options)) {
-                            console.info(this.state.options[key].owner, value)
-                            if (this.state.options[key].owner === value) {
+                        for (const key of Object.keys(this.state.allFiles)) {
+                            console.info(this.state.allFiles[key].owner, value)
+                            if (this.state.allFiles[key].owner === value) {
                                 a.push(key)
                             }
                         }
@@ -179,8 +140,8 @@ export class App extends React.PureComponent<IProps, IState> {
                         options={this.getTimeOptions(this.state.optionsA)}
                         onChange={(value, option) => {
                             const a: string[] = []
-                            for (const key of Object.keys(this.state.options)) {
-                                if (this.state.options[key].owner === this.state.selected.owner) {
+                            for (const key of Object.keys(this.state.allFiles)) {
+                                if (this.state.allFiles[key].owner === this.state.selected.owner) {
                                     a.push(key)
                                 }
                             }
@@ -211,13 +172,13 @@ export class App extends React.PureComponent<IProps, IState> {
                     style={{marginLeft: 5}}
                     type={"primary"}
                     onClick={() => {
-                        const fileA = Object.keys(this.state.options).find(value => this.state.options[value].owner === this.state.selected.owner &&
+                        const fileA = Object.keys(this.state.allFiles).find(value => this.state.allFiles[value].owner === this.state.selected.owner &&
                             value === this.state.selected.fileA)
-                        const fileB = Object.keys(this.state.options).find(value => this.state.options[value].owner === this.state.selected.owner &&
+                        const fileB = Object.keys(this.state.allFiles).find(value => this.state.allFiles[value].owner === this.state.selected.owner &&
                             value === this.state.selected.fileB)
                         if (fileA && fileB) {
-                            const dataA = this.state.options[fileA].data
-                            const dataB = this.state.options[fileB].data
+                            const dataA = this.state.allFiles[fileA].data
+                            const dataB = this.state.allFiles[fileB].data
                             const allMemberCount = dataB.length
                             let availableMemberCount = 0
                             let powerAll = 0
@@ -366,8 +327,7 @@ export class App extends React.PureComponent<IProps, IState> {
                     }>生成战功报表</Button>
             </div>
             {result && this.state.selected.fileA && this.state.selected.fileB && (
-                <div style={{
-                }}>
+                <div style={{}}>
                     标题：考勤助手v0.1测试版<br/>
                     内容：<br/>
                     统计时间{this.getFormatValue(this.state.selected.fileA)}-{this.getFormatValue(this.state.selected.fileB)}<br/>
@@ -397,6 +357,50 @@ export class App extends React.PureComponent<IProps, IState> {
         </div>
     }
 
+    private extracted(csv: string) {
+        const lines = csv.split('\n');
+        const shows: number[] = []
+        let headers = lines[0].split(',');
+        headers = headers.filter((value, index) => {
+            if (availableColumns.includes(value.trim())) {
+                shows.push(index)
+                return true
+            }
+            return false
+        })
+        const data = lines.slice(1).map(line => {
+            let lines = line.split(',')
+            lines[3] = String(Number.parseInt(lines[3]) + Number.parseInt(lines[4]))
+            lines[7] = String(Number.parseInt(lines[7]) + Number.parseInt(lines[8]))
+            lines = lines.filter((value, index) => {
+                return shows.includes(index);
+            })
+            return lines
+        });
+        return {headers, data};
+    }
+
+    private renderDebugInfo(headers: string[], data: string[][]) {
+        // 渲染表格
+        const outputHtml = `
+                        <thead>
+                          <tr>
+                            ${headers.map(header => `<th>${header}</th>`).join('')}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${data.map(row => `
+                            <tr>
+                              ${row.map(cell => `<td>${cell}</td>`).join('')}
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                    `;
+        this.setState({
+            csvResult: outputHtml
+        })
+    }
+
     private getTimeOptions(a: string[]) {
         return a.map((value) => {
             return {
@@ -413,8 +417,8 @@ export class App extends React.PureComponent<IProps, IState> {
     }
 
     private getOptions() {
-        const owners = new Set(Object.keys(this.state.options).map(value => {
-            const sub = this.state.options[value]
+        const owners = new Set(Object.keys(this.state.allFiles).map(value => {
+            const sub = this.state.allFiles[value]
             return sub.owner
         }))
         return Array.from(owners).map(value => {
