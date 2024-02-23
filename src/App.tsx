@@ -430,10 +430,10 @@ export class App extends React.PureComponent<IProps, IState> {
             value: '',
             label: 'no available',
         }]
-        const startTime = moment(this.getFormatValue(this.state.selected.fileA), 'MM/dd hh/mm')
+        const startTime = moment(this.getFormatValue(this.state.selected.fileA), 'MM/DD hh/mm')
         return a.filter((value, index) => {
             if (value) {
-                const endTime = moment(this.getFormatValue(value), 'MM/dd hh/mm')
+                const endTime = moment(this.getFormatValue(value), 'MM/DD hh/mm')
                 if (startTime < endTime) {
                     return true
                 }
