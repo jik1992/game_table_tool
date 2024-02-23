@@ -5,17 +5,18 @@ import {Button, Select, Upload} from "antd";
 import {InboxOutlined} from '@ant-design/icons';
 import {UploadChangeParam} from "antd/es/upload/interface";
 import _ from "lodash";
+import moment from "moment";
 
 type IProps = {};
 
 type IState = {
     csvResult: string
-    allFiles: {
-        [key: string]: {
-            owner: string,
-            data: string[][]
-        }
-    },
+    // allFiles: {
+    //     [key: string]: {
+    //         owner: string,
+    //         data: string[][]
+    //     }
+    // },
     optionsA: string[],
     optionsB: string[],
     selected: {
@@ -56,7 +57,7 @@ export class App extends React.PureComponent<IProps, IState> {
     state: IState = {
         csvResult: '',
         fileCount: 0,
-        allFiles: {},
+        // allFiles: {},
         selected: {},
         optionsA: [],
         optionsB: [],
@@ -67,6 +68,13 @@ export class App extends React.PureComponent<IProps, IState> {
 
     componentWillUnmount() {
     }
+
+    allFiles: {
+        [key: string]: {
+            owner: string,
+            data: string[][]
+        }
+    } = {}
 
     render() {
         const {result} = this.state
@@ -79,23 +87,24 @@ export class App extends React.PureComponent<IProps, IState> {
                 showUploadList={false}
                 beforeUpload={(file, FileList) => {
                     const fileName = file.name
-                    const allFiles = _.cloneDeep(this.state.allFiles)
-                    if (fileName in allFiles || !fileName) {
+                    if (fileName in this.allFiles || !fileName) {
                         return false;
                     }
                     const reader = new FileReader()
                     reader.readAsText(file)
-                    reader.onload = () => {
+                    reader.onload = async () => {
                         const csv = reader.result as string;
                         if (!csv || !fileName) return;
                         const {headers, data} = this.extracted(csv);
                         // this.renderDebugInfo(headers, data);
-                        allFiles[fileName] = {
+                        this.allFiles[fileName] = {
                             owner: data[0][0],
                             data: data
                         }
-                        this.setState({allFiles})
-
+                        console.info(this.allFiles)
+                        this.setState({
+                            fileCount: Object.keys(this.allFiles).length
+                        })
                     }
                 }}
                 name="files" multiple={true}>
@@ -110,17 +119,18 @@ export class App extends React.PureComponent<IProps, IState> {
                 alignItems: "center",
                 width: '100%'
             }}>
-                {this.state.fileCount > 0 && <div>成功加载 {this.state.fileCount} 文件</div>}
+                {this.state.fileCount > 0 &&
+                    <div style={{fontSize: 12, color: "red"}}>成功加载 {this.state.fileCount} 文件</div>}
                 盟主:
                 <Select
-                    style={{width: 250}}
+                    style={{width: 200}}
                     value={this.state.selected.owner}
                     options={this.getOptions()}
                     onChange={(value, option) => {
                         const a: string[] = []
-                        for (const key of Object.keys(this.state.allFiles)) {
-                            console.info(this.state.allFiles[key].owner, value)
-                            if (this.state.allFiles[key].owner === value) {
+                        for (const key of Object.keys(this.allFiles)) {
+                            console.info(this.allFiles[key].owner, value)
+                            if (this.allFiles[key].owner === value) {
                                 a.push(key)
                             }
                         }
@@ -130,18 +140,19 @@ export class App extends React.PureComponent<IProps, IState> {
                                 fileA: undefined,
                                 fileB: undefined,
                             },
-                            optionsA: a
+                            optionsA: a,
+                            result: undefined
                         })
                     }}
                 />
                 开始时间:
                 <Select style={{width: 150}}
                         value={this.state.selected.fileA}
-                        options={this.getTimeOptions(this.state.optionsA)}
+                        options={this.getStartTimeOptions(this.state.optionsA)}
                         onChange={(value, option) => {
                             const a: string[] = []
-                            for (const key of Object.keys(this.state.allFiles)) {
-                                if (this.state.allFiles[key].owner === this.state.selected.owner) {
+                            for (const key of Object.keys(this.allFiles)) {
+                                if (this.allFiles[key].owner === this.state.selected.owner) {
                                     a.push(key)
                                 }
                             }
@@ -149,7 +160,7 @@ export class App extends React.PureComponent<IProps, IState> {
                                 selected: {
                                     ...this.state.selected,
                                     fileA: value,
-
+                                    fileB: undefined
                                 },
                                 optionsB: a
                             })
@@ -158,13 +169,15 @@ export class App extends React.PureComponent<IProps, IState> {
                 结束时间:
                 <Select style={{width: 150}}
                         value={this.state.selected.fileB}
-                        options={this.getTimeOptions(this.state.optionsB)}
+                        options={this.getEndTimeOptions(this.state.optionsB)}
                         onChange={(value, option) => {
                             this.setState({
                                 selected: {
                                     ...this.state.selected,
                                     fileB: value,
-                                }
+
+                                },
+                                result: undefined
                             })
                         }}
                 />
@@ -172,13 +185,13 @@ export class App extends React.PureComponent<IProps, IState> {
                     style={{marginLeft: 5}}
                     type={"primary"}
                     onClick={() => {
-                        const fileA = Object.keys(this.state.allFiles).find(value => this.state.allFiles[value].owner === this.state.selected.owner &&
+                        const fileA = Object.keys(this.allFiles).find(value => this.allFiles[value].owner === this.state.selected.owner &&
                             value === this.state.selected.fileA)
-                        const fileB = Object.keys(this.state.allFiles).find(value => this.state.allFiles[value].owner === this.state.selected.owner &&
+                        const fileB = Object.keys(this.allFiles).find(value => this.allFiles[value].owner === this.state.selected.owner &&
                             value === this.state.selected.fileB)
                         if (fileA && fileB) {
-                            const dataA = this.state.allFiles[fileA].data
-                            const dataB = this.state.allFiles[fileB].data
+                            const dataA = this.allFiles[fileA].data
+                            const dataB = this.allFiles[fileB].data
                             const allMemberCount = dataB.length
                             let availableMemberCount = 0
                             let powerAll = 0
@@ -324,7 +337,9 @@ export class App extends React.PureComponent<IProps, IState> {
                             })
                         }
                     }
-                    }>生成战功报表</Button>
+                    }
+                    disabled={!this.state.selected || !this.state.selected.fileB}
+                >生成战功报表</Button>
             </div>
             {result && this.state.selected.fileA && this.state.selected.fileB && (
                 <div style={{}}>
@@ -401,8 +416,30 @@ export class App extends React.PureComponent<IProps, IState> {
         })
     }
 
-    private getTimeOptions(a: string[]) {
+    private getStartTimeOptions(a: string[]) {
         return a.map((value) => {
+            return {
+                value: value,
+                label: this.getFormatValue(value),
+            }
+        });
+    }
+
+    private getEndTimeOptions(a: string[]) {
+        if (!this.state.selected.fileA) return [{
+            value: '',
+            label: 'no available',
+        }]
+        const startTime = moment(this.getFormatValue(this.state.selected.fileA), 'MM/dd hh/mm')
+        return a.filter((value, index) => {
+            if (value) {
+                const endTime = moment(this.getFormatValue(value), 'MM/dd hh/mm')
+                if (startTime < endTime) {
+                    return true
+                }
+            }
+            return false
+        }).map((value) => {
             return {
                 value: value,
                 label: this.getFormatValue(value),
@@ -417,8 +454,8 @@ export class App extends React.PureComponent<IProps, IState> {
     }
 
     private getOptions() {
-        const owners = new Set(Object.keys(this.state.allFiles).map(value => {
-            const sub = this.state.allFiles[value]
+        const owners = new Set(Object.keys(this.allFiles).map(value => {
+            const sub = this.allFiles[value]
             return sub.owner
         }))
         return Array.from(owners).map(value => {
