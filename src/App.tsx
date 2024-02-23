@@ -1,7 +1,7 @@
 // tslint:disable no-console
 // tslint:disable jsx-no-lambda
 import React from 'react';
-import {Button, Select, Upload} from "antd";
+import {Button, Checkbox, Radio, Select, Upload} from "antd";
 import {InboxOutlined} from '@ant-design/icons';
 import {UploadChangeParam} from "antd/es/upload/interface";
 import _ from "lodash";
@@ -11,12 +11,6 @@ type IProps = {};
 
 type IState = {
     csvResult: string
-    // allFiles: {
-    //     [key: string]: {
-    //         owner: string,
-    //         data: string[][]
-    //     }
-    // },
     optionsA: string[],
     optionsB: string[],
     selected: {
@@ -25,6 +19,11 @@ type IState = {
         fileB?: string,
     }
     fileCount: number,
+    resultSetting: {
+        rank: boolean,
+        dead: boolean,
+        groups: string[]
+    },
     result?: {
         rateMember: number
         allMemberCount: number
@@ -57,10 +56,14 @@ export class App extends React.PureComponent<IProps, IState> {
     state: IState = {
         csvResult: '',
         fileCount: 0,
-        // allFiles: {},
         selected: {},
         optionsA: [],
         optionsB: [],
+        resultSetting: {
+            rank: true,
+            dead: true,
+            groups: []
+        }
     };
 
     componentDidMount() {
@@ -193,6 +196,8 @@ export class App extends React.PureComponent<IProps, IState> {
                             const dataA = this.allFiles[fileA].data
                             const dataB = this.allFiles[fileB].data
                             const allMemberCount = dataB.length
+                            const groupNames: string[] = []
+
                             let availableMemberCount = 0
                             let powerAll = 0
                             let powerMax = 0
@@ -229,6 +234,7 @@ export class App extends React.PureComponent<IProps, IState> {
                                         rateAvailable: 0,
                                     }
                                 } else {
+                                    groupNames.push(row[5])
                                     groupStati[row[5]] = {
                                         allMemberCount: 1,
                                         availableMemberCount: 0,
@@ -332,7 +338,12 @@ export class App extends React.PureComponent<IProps, IState> {
                                     powerAvg: Number.parseInt(powerAvg.toFixed(0)),
                                     powerMaxMember: powerMaxMember,
                                     powerMinMember: powerMinMember,
-                                    groupStati: groupStati
+                                    groupStati: groupStati,
+                                },
+                                resultSetting: {
+                                    rank: true,
+                                    dead: true,
+                                    groups: groupNames
                                 }
                             })
                         }
@@ -343,6 +354,48 @@ export class App extends React.PureComponent<IProps, IState> {
             </div>
             {result && this.state.selected.fileA && this.state.selected.fileB && (
                 <div style={{}}>
+                    <div>
+                        <Checkbox checked={this.state.resultSetting.rank} onChange={(s) => {
+                            this.setState({
+                                resultSetting: {
+                                    ...this.state.resultSetting,
+                                    rank: s.target.checked
+                                }
+                            })
+                        }}>显示排名</Checkbox>
+                        <Checkbox onChange={(s) => {
+                            this.setState({
+                                resultSetting: {
+                                    ...this.state.resultSetting,
+                                    dead: s.target.checked
+                                }
+                            })
+                        }} checked={this.state.resultSetting.dead}>显示缺勤</Checkbox>
+                        {Object.keys(result.groupStati).map(value => {
+                            return <Checkbox
+                                onChange={(s) => {
+                                    console.info(s.target)
+                                    if (s.target.checked) {
+                                        this.setState({
+                                            resultSetting: {
+                                                ...this.state.resultSetting,
+                                                groups: this.state.resultSetting.groups.concat(value)
+                                            }
+                                        })
+                                    } else {
+                                        const groups = _.cloneDeep(this.state.resultSetting.groups)
+                                        _.remove(groups, v => v === value)
+                                        this.setState({
+                                            resultSetting: {
+                                                ...this.state.resultSetting,
+                                                groups: groups
+                                            }
+                                        })
+                                    }
+                                }}
+                                checked={this.state.resultSetting.groups.includes(value)}>{value}</Checkbox>
+                        })}
+                    </div>
                     标题：考勤助手v0.1测试版<br/>
                     内容：<br/>
                     统计时间{this.getFormatValue(this.state.selected.fileA)}-{this.getFormatValue(this.state.selected.fileB)}<br/>
@@ -352,15 +405,15 @@ export class App extends React.PureComponent<IProps, IState> {
                     备注：该次活动战功少于100视为缺勤
                     {Object.keys(result.groupStati).map(value => {
                         const group = result.groupStati[value]
+                        if (!this.state.resultSetting.groups.includes(value)) return null
                         return <div>
                             【{value}】<br/>
-                            排名：出勤 {group.rankAvailable}{' '}人均{group.rankAvgPower}{' '}总战功{group.rankSumPower}
-                            <br/>
+                            {this.state.resultSetting.rank && (<>排名：出勤 {group.rankAvailable}{' '}人均{group.rankAvgPower}{' '}总战功{group.rankSumPower}
+                                <br/></>)}
                             人数：总人数 {group.allMemberCount}{' '}参战人数{group.availableMemberCount}{' '} <br/>
                             参战：比例{group.rateAvailable}%{' '}总战功{group.powerAll}{' '}人均战功{group.powerAvg}
                             <br/>
-                            &缺勤人员&：{group.dead.join('、')
-                        }
+                            {this.state.resultSetting.dead && (<> &缺勤人员&：{group.dead.join('、')}</>)}
                         </div>
                     })}
                 </div>
