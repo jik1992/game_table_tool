@@ -25,7 +25,9 @@ type IState = {
     }
     fileCount: number,
     resultSetting: {
+        mergePower: boolean,
         rank: boolean,
+        stati: boolean,
         dead: boolean,
         groups: string[]
     },
@@ -42,7 +44,9 @@ export class App extends React.PureComponent<IProps, IState> {
         optionsA: [],
         optionsB: [],
         resultSetting: {
+            mergePower: true,
             rank: true,
+            stati: true,
             dead: true,
             groups: []
         },
@@ -164,7 +168,14 @@ export class App extends React.PureComponent<IProps, IState> {
                                 result: undefined
                             })
                         }}
-                />
+                /> [战功/助攻]合并<Checkbox checked={this.state.resultSetting.mergePower} onChange={(e) => {
+                this.setState({
+                    resultSetting: {
+                        ...this.state.resultSetting,
+                        mergePower: e.target.checked
+                    }
+                })
+            }}/>
                 <Button
                     style={{marginLeft: 5}}
                     type={"primary"}
@@ -176,12 +187,13 @@ export class App extends React.PureComponent<IProps, IState> {
                         if (fileA && fileB) {
                             const dataA = this.allFiles[fileA].data
                             const dataB = this.allFiles[fileB].data
-                            const result = exportStati(dataB, dataA);
+                            const result = exportStati(dataB, dataA, this.state.resultSetting.mergePower);
                             this.setState({
                                 result: {
                                     ...result,
                                 },
                                 resultSetting: {
+                                    ...this.state.resultSetting,
                                     rank: true,
                                     dead: true,
                                     groups: result.groupNames
@@ -193,6 +205,7 @@ export class App extends React.PureComponent<IProps, IState> {
                     disabled={!this.state.selected || !this.state.selected.fileB}
                 >生成战功报表</Button>
             </div>
+
             {result && this.state.selected.fileA && this.state.selected.fileB && (
                 <div>
                     <Select
@@ -290,6 +303,15 @@ export class App extends React.PureComponent<IProps, IState> {
                             }
                         })
                     }}>显示排名</Checkbox>
+
+                    <Checkbox checked={this.state.resultSetting.stati} onChange={(s) => {
+                        this.setState({
+                            resultSetting: {
+                                ...this.state.resultSetting,
+                                stati: s.target.checked
+                            }
+                        })
+                    }}>显示统计</Checkbox>
                     <Checkbox onChange={(s) => {
                         this.setState({
                             resultSetting: {
@@ -313,10 +335,12 @@ export class App extends React.PureComponent<IProps, IState> {
                         【{value}】<br/>
                         {this.state.resultSetting.rank && (<>排名：出勤 {group.rankAvailable}{' '}人均{group.rankAvgPower}{' '}总战功{group.rankSumPower}
                             <br/></>)}
-                        人数：总人数 {group.allMemberCount}{' '}参战人数{group.availableMemberCount}{' '}
-                        <br/>
-                        参战：比例{group.rateAvailable}%{' '}总战功{group.powerAll}{' '}人均战功{group.powerAvg}
-                        <br/>
+                        {this.state.resultSetting.stati && (
+                            <>人数：总人数 {group.allMemberCount}{' '}参战人数{group.availableMemberCount}{' '}
+                                <br/>
+                                参战：比例{group.rateAvailable}%{' '}总战功{group.powerAll}{' '}人均战功{group.powerAvg}
+                                <br/></>
+                        )}
                         {this.state.resultSetting.dead && (<> &缺勤人员&：{group.dead.join('、')}</>)}
                     </div>
                 })}

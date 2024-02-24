@@ -45,15 +45,21 @@ function getGroupName(row: string[]) {
     return row[7];
 }
 
-function getPowerWeek(row: string[]) {
+function getPowerWeek(row: string[], isMerge = false) {
+    if (isMerge) {
+        return Number.parseInt(row[1]) + Number.parseInt(row[2]);
+    }
     return Number.parseInt(row[1]);
 }
 
-function getPowerAll(row: string[]) {
+function getPowerAll(row: string[], isMerge = false) {
+    if (isMerge) {
+        return Number.parseInt(row[3]) + Number.parseInt(row[4]);
+    }
     return Number.parseInt(row[3]);
 }
 
-export const exportStati = (dataB: string[][], dataA: string[][]) => {
+export const exportStati = (dataB: string[][], dataA: string[][], isMerge = false) => {
     const allMemberCount = dataB.length
     const groupNames: string[] = []
 
@@ -114,7 +120,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
         const rowMemberA = dataA.find(value => value[0] === member)
         let ok = 0
         if (rowMemberA) {
-            ok = getPowerWeek(row) - getPowerWeek(rowMemberA)
+            ok = getPowerWeek(row, isMerge) - getPowerWeek(rowMemberA, isMerge)
             if (ok >= LIMIT_MIN) {
                 availableMemberCount += 1
                 powerAll += ok
@@ -131,7 +137,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
                     life: groupStati[memberGroup].life + getLife(row),
                     powerAll: groupStati[memberGroup].powerAll + ok,
-                    allPower: groupStati[memberGroup].allPower + getPowerAll(row),
+                    allPower: groupStati[memberGroup].allPower + getPowerAll(row, isMerge),
                 }
             } else {
                 groupStati[memberGroup] = {
@@ -140,7 +146,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 }
             }
         } else {
-            ok = getPowerWeek(row)
+            ok = getPowerWeek(row, isMerge)
             if (ok >= LIMIT_MIN) {
                 availableMemberCount += 1
                 powerAll += ok
@@ -157,7 +163,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
                     life: groupStati[memberGroup].life + (getLife(row)),
                     powerAll: groupStati[memberGroup].powerAll + ok,
-                    allPower: groupStati[memberGroup].allPower + getPowerAll(row),
+                    allPower: groupStati[memberGroup].allPower + getPowerAll(row, isMerge),
                 }
             } else {
 
