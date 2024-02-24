@@ -312,6 +312,7 @@ export class App extends React.PureComponent<IProps, IState> {
         </div>;
     }
 
+    // https://handsontable.com/docs/react-data-grid/
     private renderTable(source: { data: string[][]; columns: string[] }) {
         return <HotTable
             data={source.data}
