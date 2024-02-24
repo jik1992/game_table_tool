@@ -14,8 +14,8 @@ export type ResultData = {
 export type GroupStati = {
     allMemberCount: number,
     availableMemberCount: number,
-    powerAvg: number,
-    powerAll: number,
+    weekPowerAvg: number,
+    weekPowerSum: number,
     dead: string[],
     life: number,
     rankAvailable: number,

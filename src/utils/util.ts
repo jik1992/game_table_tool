@@ -81,8 +81,8 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
                 ...groupStati[getGroupName(row)],
                 allMemberCount: groupStati[getGroupName(row)].allMemberCount + 1,
                 availableMemberCount: 0,
-                powerAvg: 0,
-                powerAll: 0,
+                weekPowerAvg: 0,
+                weekPowerSum: 0,
                 rankAvailable: 0,
                 rankAvgPower: 0,
                 rankSumPower: 0,
@@ -93,8 +93,8 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
             groupStati[getGroupName(row)] = {
                 allMemberCount: 1,
                 availableMemberCount: 0,
-                powerAvg: 0,
-                powerAll: 0,
+                weekPowerAvg: 0,
+                weekPowerSum: 0,
                 dead: [],
                 rankAvailable: 0,
                 life: 0,
@@ -136,7 +136,7 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
                     ...groupStati[memberGroup],
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
                     life: groupStati[memberGroup].life + getLife(row),
-                    powerAll: groupStati[memberGroup].powerAll + ok,
+                    weekPowerSum: groupStati[memberGroup].weekPowerSum + ok,
                     allPower: groupStati[memberGroup].allPower + getPowerAll(row, isMerge),
                 }
             } else {
@@ -162,7 +162,7 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
                     ...groupStati[memberGroup],
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
                     life: groupStati[memberGroup].life + (getLife(row)),
-                    powerAll: groupStati[memberGroup].powerAll + ok,
+                    weekPowerSum: groupStati[memberGroup].weekPowerSum + ok,
                     allPower: groupStati[memberGroup].allPower + getPowerAll(row, isMerge),
                 }
             } else {
@@ -172,9 +172,9 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
 
     }
     for (const key of Object.keys(groupStati)) {
-        groupStati[key].powerAvg = Number.parseInt((groupStati[key].powerAll / groupStati[key].availableMemberCount).toFixed(0))
+        groupStati[key].weekPowerAvg = Number.parseInt((groupStati[key].weekPowerSum / groupStati[key].availableMemberCount).toFixed(0))
         groupStati[key].rateAvailable = Number.parseInt((groupStati[key].availableMemberCount / groupStati[key].allMemberCount * 100).toFixed(0))
-        groupStati[key].ratePowerLife = groupStati[key].powerAll / groupStati[key].life
+        groupStati[key].ratePowerLife = groupStati[key].weekPowerSum / groupStati[key].life
         groupStati[key].rateAllPowerLife = groupStati[key].allPower / groupStati[key].life
     }
     const powerAvg = powerAll / availableMemberCount;
@@ -191,10 +191,10 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
             if (c !== key && groupStati[c].rateAvailable > groupStati[key].rateAvailable) {
                 rankAvailable++
             }
-            if (c !== key && groupStati[c].powerAvg > groupStati[key].powerAvg) {
+            if (c !== key && groupStati[c].weekPowerAvg > groupStati[key].weekPowerAvg) {
                 rankAvgPower++
             }
-            if (c !== key && groupStati[c].powerAll > groupStati[key].powerAll) {
+            if (c !== key && groupStati[c].weekPowerSum > groupStati[key].weekPowerSum) {
                 rankSumPower++
             }
             if (c !== key && groupStati[c].ratePowerLife > groupStati[key].ratePowerLife) {
