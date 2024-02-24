@@ -13,6 +13,8 @@ import {ResultData} from "./utils/app";
 import {generateAllSummary, generateSingleSummary, generateWeekSummary} from "./utils/summary";
 
 import { registerAllModules } from 'handsontable/registry';
+import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
+registerLanguageDictionary(zhCN);
 
 registerAllModules();
 
@@ -317,6 +319,7 @@ export class App extends React.PureComponent<IProps, IState> {
         return <HotTable
             data={source.data}
             colHeaders={source.columns}
+            language={zhCN.languageCode}
             width={'100%'}
             height={'auto'}
             rowHeaders={true}
