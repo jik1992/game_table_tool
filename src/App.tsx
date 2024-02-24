@@ -3,10 +3,14 @@
 import React from 'react';
 import {Button, Checkbox, Radio, Select, Upload} from "antd";
 import {InboxOutlined} from '@ant-design/icons';
-import {UploadChangeParam} from "antd/es/upload/interface";
 import _ from "lodash";
-import moment from "moment";
 import {createMomentTime, exportStati, extractedCSVData, extractFormatTimeString} from "./utils/util";
+
+import "pikaday/css/pikaday.css";
+import {HotColumn, HotTable} from "@handsontable/react";
+import "handsontable/dist/handsontable.min.css";
+import {ResultData} from "./utils/app";
+import {generateAllSummary, generateSingleSummary, generateWeekSummary} from "./utils/summary";
 
 type IProps = {};
 
@@ -26,28 +30,7 @@ type IState = {
         groups: string[]
     },
     mode: 'text' | 'image' | 'table',
-    result?: {
-        rateMember: number
-        allMemberCount: number
-        availableMemberCount: number
-        powerAll: number
-        powerAvg: number
-        powerMaxMember: string
-        powerMinMember: string
-        groupStati: {
-            [key: string]: {
-                allMemberCount: number,
-                availableMemberCount: number,
-                powerAvg: number,
-                powerAll: number,
-                dead: string[],
-                rankAvailable: number,
-                rankAvgPower: number,
-                rankSumPower: number,
-                rateAvailable: number,
-            }
-        }
-    }
+    result?: ResultData
 };
 
 
@@ -63,7 +46,7 @@ export class App extends React.PureComponent<IProps, IState> {
             dead: true,
             groups: []
         },
-        mode: 'text'
+        mode: 'table'
     };
 
     componentDidMount() {
@@ -131,7 +114,6 @@ export class App extends React.PureComponent<IProps, IState> {
                     onChange={(value, option) => {
                         const a: string[] = []
                         for (const key of Object.keys(this.allFiles)) {
-                            console.info(this.allFiles[key].owner, value)
                             if (this.allFiles[key].owner === value) {
                                 a.push(key)
                             }
@@ -214,7 +196,7 @@ export class App extends React.PureComponent<IProps, IState> {
             {result && this.state.selected.fileA && this.state.selected.fileB && (
                 <div>
                     <Select
-                        defaultValue={"text"}
+                        value={this.state.mode}
                         options={[
                             {value: 'text', label: '法令模式'},
                             {value: 'table', label: '微信模式'},
@@ -223,7 +205,8 @@ export class App extends React.PureComponent<IProps, IState> {
                             this.setState({mode: e as 'text' | 'image' | 'table'})
                         }}
                     />
-                    {this.state.mode === "text" && this.renderTextResult(result)}
+                    {this.state.mode === "table" && this.renderTableResult()}
+                    {this.state.mode === "text" && this.renderTextResult()}
                 </div>
             )}
             {/*<table dangerouslySetInnerHTML={{*/}
@@ -234,29 +217,42 @@ export class App extends React.PureComponent<IProps, IState> {
     }
 
 
-    private renderTextResult(result: {
-        rateMember: number;
-        allMemberCount: number;
-        availableMemberCount: number;
-        powerAll: number;
-        powerAvg: number;
-        powerMaxMember: string;
-        powerMinMember: string;
-        groupStati: {
-            [p: string]: {
-                allMemberCount: number;
-                availableMemberCount: number;
-                powerAvg: number;
-                powerAll: number;
-                dead: string[];
-                rankAvailable: number;
-                rankAvgPower: number;
-                rankSumPower: number;
-                rateAvailable: number
-            }
+    private renderTableResult() {
+        const {result} = this.state
+
+        if (!result || !this.state.selected.fileA || !this.state.selected.fileB) {
+            return ''
         }
-    }) {
-        if (!this.state.selected.fileA || !this.state.selected.fileB) {
+        return <div>
+            {this.renderTable(generateSingleSummary(result))}
+            {this.renderTable(generateWeekSummary(result))}
+            {this.renderTable(generateAllSummary(result))}
+        </div>;
+    }
+
+    private renderTable(source: { data: string[][]; columns: string[] }) {
+        return <HotTable
+            data={source.data}
+            colHeaders={source.columns}
+            width={'100%'}
+            height={'auto'}
+            rowHeaders={true}
+            colWidths={100}
+            manualColumnResize={true}
+            autoWrapRow={true}
+            autoWrapCol={true}
+            filter={true}
+            dropdownMenu={true}
+            licenseKey="non-commercial-and-evaluation"
+        >
+        </HotTable>;
+    }
+
+
+    private renderTextResult() {
+        const {result} = this.state
+
+        if (!result || !this.state.selected.fileA || !this.state.selected.fileB) {
             return ''
         }
         return <div>
