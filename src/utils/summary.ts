@@ -1,23 +1,25 @@
 import {ResultData} from "./app";
 
 export const generateSingleSummary = (result: ResultData, filters: string[]) => {
-    const data: string[][] = []
+    const data: any[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
         data.push([
             groupName,
             result.groupStati[groupName].allMemberCount as unknown as string,
             result.groupStati[groupName].availableMemberCount as unknown as string,
-            `${result.groupStati[groupName].rateAvailable as unknown as string}%`,
+            result.groupStati[groupName].rateAvailable,
             result.groupStati[groupName].powerAvg as unknown as string,
         ])
     })
     return {
-        data: data.filter(value => filters.includes(value[0])),
+        data: data.filter(value => filters.includes(value[0])).sort((a, b) => {
+            return a[3] < b[3] ? 1 : -1
+        }),
         columns: [
             "小组",
             "人数",
             "参与人数",
-            "参与率",
+            "参与率(%)",
             "人均战功",
         ]
     };
