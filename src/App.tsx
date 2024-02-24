@@ -1,6 +1,6 @@
 // tslint:disable no-console
 // tslint:disable jsx-no-lambda
-import React from 'react';
+import React, {useRef} from 'react';
 import {Button, Checkbox, Radio, Select, Upload} from "antd";
 import {InboxOutlined} from '@ant-design/icons';
 import _ from "lodash";
@@ -10,10 +10,11 @@ import "pikaday/css/pikaday.css";
 import {HotTable} from "@handsontable/react";
 import 'handsontable/dist/handsontable.full.min.css';
 import {ResultData} from "./utils/app";
-import {generateAllSummary, generateRangeSummary, generateSingleSummary, generateWeekSummary} from "./utils/summary";
+import {generateAllSummary, generateRangeSummary, generateWeekSummary} from "./utils/summary";
 
-import { registerAllModules } from 'handsontable/registry';
-import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
+import {registerAllModules} from 'handsontable/registry';
+import {registerLanguageDictionary, zhCN} from 'handsontable/i18n';
+
 registerLanguageDictionary(zhCN);
 
 registerAllModules();
@@ -43,6 +44,8 @@ type IState = {
 
 
 export class App extends React.PureComponent<IProps, IState> {
+    // refPhoto = useRef<HTMLDivElement>(null)
+
     state: IState = {
         csvResult: '',
         fileCount: 0,
@@ -213,7 +216,7 @@ export class App extends React.PureComponent<IProps, IState> {
             </div>
 
             {result && this.state.selected.fileA && this.state.selected.fileB && (
-                <div>
+                <div >
                     <Select
                         value={this.state.mode}
                         options={[
@@ -305,8 +308,6 @@ export class App extends React.PureComponent<IProps, IState> {
             return ''
         }
         return <div>
-            区间出勤率
-            {this.renderTable(generateSingleSummary(result, this.state.resultSetting.groups))}
             区间战功考核
             {this.renderTable(generateRangeSummary(result, this.state.resultSetting.groups))}
             周战功考核
@@ -334,7 +335,7 @@ export class App extends React.PureComponent<IProps, IState> {
             licenseKey="d7675-41c63-8a164-ebca2-fb410"
             columnSorting={true}
             contextMenu={['copy', 'cut']}
-    >
+        >
         </HotTable>;
     }
 

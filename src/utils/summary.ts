@@ -1,42 +1,21 @@
 import {ResultData} from "./app";
 
-export const generateSingleSummary = (result: ResultData, filters: string[]) => {
+
+export const generateRangeSummary = (result: ResultData, filters: string [],) => {
     const data: any[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
         data.push([
             groupName,
-            result.groupStati[groupName].allMemberCount as unknown as string,
-            result.groupStati[groupName].availableMemberCount as unknown as string,
+            result.groupStati[groupName].allMemberCount,
+            result.groupStati[groupName].availableMemberCount,
             result.groupStati[groupName].rateAvailable,
-            result.groupStati[groupName].rangePowerAvg as unknown as string,
-        ])
-    })
-    return {
-        data: data.filter(value => filters.includes(value[0])).sort((a, b) => {
-            return a[3] < b[3] ? 1 : -1
-        }),
-        columns: [
-            "小组",
-            "人数",
-            "参与人数",
-            "参与率(%)",
-            "人均战功",
-        ]
-    };
-}
-
-export const generateRangeSummary = (result: ResultData, filters: string [],) => {
-    const data: string[][] = []
-    Object.keys(result.groupStati).map((groupName, index) => {
-        data.push([
-            groupName,
-            result.groupStati[groupName].allMemberCount as unknown as string,
             `${(result.groupStati[groupName].life / result.groupStati[groupName].allMemberCount).toFixed(2)}`,
-            result.groupStati[groupName].rankSumPower as unknown as string,
-            result.groupStati[groupName].rangePowerSum as unknown as string,
-            result.groupStati[groupName].rankSumPower as unknown as string,
-            result.groupStati[groupName].ratePowerLife as unknown as string,
-            result.groupStati[groupName].rankPowerLife as unknown as string
+            result.groupStati[groupName].rankSumPower,
+            result.groupStati[groupName].rangePowerSum,
+            result.groupStati[groupName].rangePowerAvg,
+            result.groupStati[groupName].rankSumPower,
+            result.groupStati[groupName].ratePowerLife,
+            result.groupStati[groupName].rankPowerLife
         ])
     })
     return {
@@ -46,9 +25,12 @@ export const generateRangeSummary = (result: ResultData, filters: string [],) =>
         columns: [
             "小组",
             "人数",
+            "参与人数",
+            "参与率(%)",
             "人均势力",
             "势力排名",
-            `当前区间战功`,
+            `区间战功`,
+            "区间人均战功",
             "战功排名",
             "战功/势力",
             "伤转排名",
@@ -75,7 +57,7 @@ export const generateWeekSummary = (result: ResultData, filters: string []) => {
             return a[5] < b[5] ? -1 : 1
         }),
         columns: [
-            '小组',	'人数',	'人均势力',	'势力排名'	,	'周战功',	'战功排名'	,'战功/势力'	,'伤转排名'
+            '小组', '人数', '人均势力', '势力排名', '周战功', '战功排名', '战功/势力', '伤转排名'
         ]
     };
 }
