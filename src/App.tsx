@@ -7,7 +7,7 @@ import _ from "lodash";
 import {createMomentTime, exportStati, extractedCSVData, extractFormatTimeString} from "./utils/util";
 
 import "pikaday/css/pikaday.css";
-import {HotColumn, HotTable} from "@handsontable/react";
+import {HotTable} from "@handsontable/react";
 import "handsontable/dist/handsontable.min.css";
 import {ResultData} from "./utils/app";
 import {generateAllSummary, generateSingleSummary, generateWeekSummary} from "./utils/summary";
