@@ -69,7 +69,7 @@ export const generateAllSummary = (result: ResultData, filters: string []) => {
     })
     return {
         data: data.filter(value => filters.includes(value[0])).sort((a, b) => {
-            return a[7] < b[7] ? -1 : 1
+            return a[5] < b[5] ? -1 : 1
         }),
         columns: [
             "小组",

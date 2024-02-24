@@ -281,6 +281,7 @@ export class App extends React.PureComponent<IProps, IState> {
             filter={true}
             dropdownMenu={true}
             licenseKey="non-commercial-and-evaluation"
+            columnSorting={true}
         >
         </HotTable>;
     }
