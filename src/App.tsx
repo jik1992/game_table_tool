@@ -469,8 +469,10 @@ export class App extends React.PureComponent<IProps, IState> {
         })
     }
 
-    private getStartTimeOptions(a: string[]) {
-        return a.map((value) => {
+    private getStartTimeOptions(timelines: string[]) {
+        return timelines.sort((a, b) => {
+            return this.createMomentTime(a) > this.createMomentTime(b) ? -1 : 1
+        }).map((value) => {
             return {
                 value: value,
                 label: this.getFormatValue(value),
@@ -483,21 +485,27 @@ export class App extends React.PureComponent<IProps, IState> {
             value: '',
             label: 'no available',
         }]
-        const startTime = moment(this.getFormatValue(this.state.selected.fileA), 'MM/DD hh/mm')
+        const startTime = this.createMomentTime(this.state.selected.fileA)
         return a.filter((value, index) => {
             if (value) {
-                const endTime = moment(this.getFormatValue(value), 'MM/DD hh/mm')
+                const endTime = this.createMomentTime(value)
                 if (startTime < endTime) {
                     return true
                 }
             }
             return false
+        }).sort((a, b) => {
+            return this.createMomentTime(a) < this.createMomentTime(b) ? -1 : 1
         }).map((value) => {
             return {
                 value: value,
                 label: this.getFormatValue(value),
             }
         });
+    }
+
+    private createMomentTime(value: string) {
+        return moment(this.getFormatValue(value), 'MM/DD hh/mm');
     }
 
     private getFormatValue(value: string) {
