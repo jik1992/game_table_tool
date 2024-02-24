@@ -199,7 +199,7 @@ export class App extends React.PureComponent<IProps, IState> {
                         value={this.state.mode}
                         options={[
                             {value: 'text', label: '法令模式'},
-                            {value: 'table', label: '微信模式'},
+                            {value: 'table', label: '报表模式'},
                         ]}
                         onChange={(e) => {
                             this.setState({mode: e as 'text' | 'image' | 'table'})
