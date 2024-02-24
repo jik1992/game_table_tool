@@ -321,7 +321,7 @@ export class App extends React.PureComponent<IProps, IState> {
             autoWrapCol={true}
             filter={true}
             dropdownMenu={true}
-            licenseKey="non-commercial-and-evaluation"
+            licenseKey="d7675-41c63-8a164-ebca2-fb410"
             columnSorting={true}
             contextMenu={['copy', 'cut']}
     >
