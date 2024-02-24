@@ -8,9 +8,13 @@ import {availableColumns, createMomentTime, exportStati, extractedCSVData, extra
 
 import "pikaday/css/pikaday.css";
 import {HotTable} from "@handsontable/react";
-import "handsontable/dist/handsontable.min.css";
+import 'handsontable/dist/handsontable.full.min.css';
 import {ResultData} from "./utils/app";
 import {generateAllSummary, generateSingleSummary, generateWeekSummary} from "./utils/summary";
+
+import { registerAllModules } from 'handsontable/registry';
+
+registerAllModules();
 
 type IProps = {};
 
