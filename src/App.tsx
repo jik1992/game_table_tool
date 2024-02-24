@@ -1,7 +1,7 @@
 // tslint:disable no-console
 // tslint:disable jsx-no-lambda
 import React, {useRef} from 'react';
-import {Button, Checkbox, Radio, Select, Upload} from "antd";
+import {Button, Checkbox, message, Radio, Select, Upload} from "antd";
 import {InboxOutlined} from '@ant-design/icons';
 import _ from "lodash";
 import {availableColumns, createMomentTime, exportStati, extractedCSVData, extractFormatTimeString} from "./utils/util";
@@ -216,18 +216,21 @@ export class App extends React.PureComponent<IProps, IState> {
                     }
                     disabled={!this.state.selected || !this.state.selected.fileB}
                 >生成战功报表</Button>
-                <Button onClick={() => {
-                    if (this.refPhoto.current) {
-                        html2canvas(this.refPhoto.current).then(function (canvas) {
-                            const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
-                            const link = document.createElement('a')
-                            link.download = 'your-image.png'
-                            link.href = dataUrl
-                            link.click()
-                        });
-                    }
-                }}>download</Button>
-
+                {this.existResult() && (
+                    <Button onClick={() => {
+                        if (this.refPhoto.current) {
+                            html2canvas(this.refPhoto.current).then(async (canvas) => {
+                                const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
+                                // const link = document.createElement('a')
+                                // link.download = 'your-image.png'
+                                // link.href = dataUrl
+                                // link.click()
+                                await this.copyImgToClipboard(dataUrl)
+                                message.success('copied snapshot successful.')
+                            });
+                        }
+                    }}>copy</Button>
+                )}
             </div>
 
             {this.existResult() && (
@@ -328,7 +331,7 @@ export class App extends React.PureComponent<IProps, IState> {
             return ''
         }
         return <div>
-            区间战功考核
+            {`${extractFormatTimeString(this.state.selected.fileA)} - ${extractFormatTimeString(this.state.selected.fileB)}`}战功考核
             {this.renderTable(generateRangeSummary(result, this.state.resultSetting.groups))}
             周战功考核
             {this.renderTable(generateWeekSummary(result, this.state.resultSetting.groups))}
@@ -359,6 +362,20 @@ export class App extends React.PureComponent<IProps, IState> {
         </HotTable>;
     }
 
+    private copyImgToClipboard = async (imgUrl: any) => {
+        try {
+            const data = await fetch(imgUrl);
+            const blob = await data.blob();
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    [blob.type]: blob,
+                }),
+            ]);
+            console.log('Image copied.');
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     private renderTextResult() {
         const {result} = this.state
