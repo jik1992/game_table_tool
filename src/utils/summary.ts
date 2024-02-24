@@ -20,7 +20,7 @@ export const generateRangeSummary = (result: ResultData, filters: string [],) =>
     })
     return {
         data: data.filter(value => filters.includes(value[0])).sort((a, b) => {
-            return a[7] < b[7] ? -1 : 1
+            return a[10] < b[10] ? -1 : 1
         }),
         columns: [
             "小组",

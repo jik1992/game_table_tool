@@ -14,6 +14,7 @@ import {generateAllSummary, generateRangeSummary, generateWeekSummary} from "./u
 
 import {registerAllModules} from 'handsontable/registry';
 import {registerLanguageDictionary, zhCN} from 'handsontable/i18n';
+import html2canvas from "html2canvas";
 
 registerLanguageDictionary(zhCN);
 
@@ -44,7 +45,7 @@ type IState = {
 
 
 export class App extends React.PureComponent<IProps, IState> {
-    // refPhoto = useRef<HTMLDivElement>(null)
+    refPhoto = React.createRef<HTMLDivElement>()
 
     state: IState = {
         csvResult: '',
@@ -77,6 +78,8 @@ export class App extends React.PureComponent<IProps, IState> {
 
     render() {
         const {result} = this.state
+        // @ts-ignore
+        // @ts-ignore
         return <div className="App">
             <Upload.Dragger
                 style={{
@@ -213,10 +216,22 @@ export class App extends React.PureComponent<IProps, IState> {
                     }
                     disabled={!this.state.selected || !this.state.selected.fileB}
                 >生成战功报表</Button>
+                <Button onClick={() => {
+                    if (this.refPhoto.current) {
+                        html2canvas(this.refPhoto.current).then(function (canvas) {
+                            const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
+                            const link = document.createElement('a')
+                            link.download = 'your-image.png'
+                            link.href = dataUrl
+                            link.click()
+                        });
+                    }
+                }}>download</Button>
+
             </div>
 
-            {result && this.state.selected.fileA && this.state.selected.fileB && (
-                <div >
+            {this.existResult() && (
+                <div ref={this.refPhoto}>
                     <Select
                         value={this.state.mode}
                         options={[
@@ -244,7 +259,7 @@ export class App extends React.PureComponent<IProps, IState> {
                             }
                         }}
                     />
-                    {Object.keys(result.groupStati).map(value => {
+                    {result && Object.keys(result.groupStati).map(value => {
                         return <Checkbox
                             onChange={(s) => {
                                 console.info(s.target)
@@ -274,6 +289,11 @@ export class App extends React.PureComponent<IProps, IState> {
                 </div>
             )}
         </div>
+    }
+
+    private existResult() {
+        const {result, selected} = this.state
+        return result && selected.fileA && selected.fileB;
     }
 
     private renderDebugResult() {
