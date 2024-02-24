@@ -299,8 +299,11 @@ export class App extends React.PureComponent<IProps, IState> {
             return ''
         }
         return <div>
+            区间出勤率
             {this.renderTable(generateSingleSummary(result, this.state.resultSetting.groups))}
+            区间战功考核
             {this.renderTable(generateWeekSummary(result, this.state.resultSetting.groups))}
+            汇总战功考核
             {this.renderTable(generateAllSummary(result, this.state.resultSetting.groups))}
         </div>;
     }
