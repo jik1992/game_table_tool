@@ -105,7 +105,6 @@ export class App extends React.PureComponent<IProps, IState> {
                             owner: data[0][0],
                             data: data
                         }
-                        console.info(this.allFiles)
                         this.setState({
                             fileCount: Object.keys(this.allFiles).length
                         })
