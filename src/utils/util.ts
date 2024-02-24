@@ -11,9 +11,7 @@ export const extractFormatTimeString = (value: string) => {
     return `${match[2]}/${match[3]} ${match[4]}:${match[5]}`;
 }
 
-const availableColumns = [
-    '成员', '战功本周', '助攻本周', '战功总量', '助攻总量', '势力值', '所属阵营', '分组',
-]
+
 export const extractedCSVData = (csv: string) => {
     const lines = csv.split('\n');
     const shows: number[] = []
@@ -35,6 +33,9 @@ export const extractedCSVData = (csv: string) => {
     return {headers, data};
 }
 const LIMIT_MIN = 100
+const availableColumns = [
+    '成员', '战功本周', '助攻本周', '战功总量', '助攻总量', '势力值', '所属阵营', '分组',
+]
 
 function getLife(row: string[]) {
     return row[5];
