@@ -12,7 +12,7 @@ export const extractFormatTimeString = (value: string) => {
 }
 
 const availableColumns = [
-    '成员', '战功本周', '战功总量', '势力值', '所属阵营', '分组'
+    '成员', '战功本周', '战功总量', '助攻本周', '助攻总量', '势力值', '所属阵营', '分组',
 ]
 export const extractedCSVData = (csv: string) => {
     const lines = csv.split('\n');
@@ -27,8 +27,6 @@ export const extractedCSVData = (csv: string) => {
     })
     const data = lines.slice(1).map(line => {
         let lines = line.split(',')
-        lines[3] = String(Number.parseInt(lines[3]) + Number.parseInt(lines[4]))
-        lines[7] = String(Number.parseInt(lines[7]) + Number.parseInt(lines[8]))
         lines = lines.filter((value, index) => {
             return shows.includes(index);
         })
@@ -52,13 +50,13 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
         [key: string]: GroupStati
     } = {}
     for (const row of dataB) {
-        if (!row[5]) {
+        if (!row[7]) {
             continue
         }
-        if (row[5] in groupStati) {
-            groupStati[row[5]] = {
-                ...groupStati[row[5]],
-                allMemberCount: groupStati[row[5]].allMemberCount + 1,
+        if (row[7] in groupStati) {
+            groupStati[row[7]] = {
+                ...groupStati[row[7]],
+                allMemberCount: groupStati[row[7]].allMemberCount + 1,
                 availableMemberCount: 0,
                 powerAvg: 0,
                 powerAll: 0,
@@ -68,8 +66,8 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 rateAvailable: 0,
             }
         } else {
-            groupNames.push(row[5])
-            groupStati[row[5]] = {
+            groupNames.push(row[7])
+            groupStati[row[7]] = {
                 allMemberCount: 1,
                 availableMemberCount: 0,
                 powerAvg: 0,
@@ -91,11 +89,11 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
         }
     }
     for (const row of dataB) {
-        if (!row[5]) {
+        if (!row[7]) {
             continue
         }
         const member = row[0]
-        const memberGroup = row[5]
+        const memberGroup = row[7]
         const rowMemberA = dataA.find(value => value[0] === member)
         let ok = 0
         if (rowMemberA) {
