@@ -323,7 +323,8 @@ export class App extends React.PureComponent<IProps, IState> {
             dropdownMenu={true}
             licenseKey="non-commercial-and-evaluation"
             columnSorting={true}
-        >
+            contextMenu={['copy', 'cut']}
+    >
         </HotTable>;
     }
 
