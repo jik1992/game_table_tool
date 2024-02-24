@@ -10,7 +10,7 @@ import "pikaday/css/pikaday.css";
 import {HotTable} from "@handsontable/react";
 import 'handsontable/dist/handsontable.full.min.css';
 import {ResultData} from "./utils/app";
-import {generateAllSummary, generateSingleSummary, generateWeekSummary} from "./utils/summary";
+import {generateAllSummary, generateRangeSummary, generateSingleSummary, generateWeekSummary} from "./utils/summary";
 
 import { registerAllModules } from 'handsontable/registry';
 import { registerLanguageDictionary, zhCN } from 'handsontable/i18n';
@@ -308,6 +308,8 @@ export class App extends React.PureComponent<IProps, IState> {
             区间出勤率
             {this.renderTable(generateSingleSummary(result, this.state.resultSetting.groups))}
             区间战功考核
+            {this.renderTable(generateRangeSummary(result, this.state.resultSetting.groups))}
+            周战功考核
             {this.renderTable(generateWeekSummary(result, this.state.resultSetting.groups))}
             汇总战功考核
             {this.renderTable(generateAllSummary(result, this.state.resultSetting.groups))}

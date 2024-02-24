@@ -80,13 +80,6 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
             groupStati[getGroupName(row)] = {
                 ...groupStati[getGroupName(row)],
                 allMemberCount: groupStati[getGroupName(row)].allMemberCount + 1,
-                availableMemberCount: 0,
-                rangePowerAvg: 0,
-                rangePowerSum: 0,
-                rankAvailable: 0,
-                rankAvgPower: 0,
-                rankSumPower: 0,
-                rateAvailable: 0,
             }
         } else {
             groupNames.push(getGroupName(row))
@@ -108,6 +101,10 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
                 rateAllPowerLife: 0,
                 rankAllPower: 0,
                 rankAllPowerLife: 0,
+                allWeekPower: 0,
+                rankAllWeekPower: 0,
+                rateAllWeekPowerLife: 0,
+                rankAllWeekPowerLife: 0,
             }
         }
     }
@@ -123,6 +120,7 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
             ...groupStati[memberGroup],
             life: groupStati[memberGroup].life + getLife(row),
             allPower: groupStati[memberGroup].allPower + getPowerAll(row, isMerge),
+            allWeekPower: groupStati[memberGroup].allWeekPower + getPowerWeek(row, isMerge),
         }
 
         let ok = 0
@@ -179,6 +177,7 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
         groupStati[key].rateAvailable = Number.parseInt((groupStati[key].availableMemberCount / groupStati[key].allMemberCount * 100).toFixed(0))
         groupStati[key].ratePowerLife = groupStati[key].rangePowerSum / groupStati[key].life
         groupStati[key].rateAllPowerLife = groupStati[key].allPower / groupStati[key].life
+        groupStati[key].rateAllWeekPowerLife = groupStati[key].allWeekPower / groupStati[key].life
     }
     const powerAvg = powerAll / availableMemberCount;
     const rateMember = Number.parseInt((availableMemberCount / allMemberCount * 100).toFixed(0));
@@ -190,6 +189,8 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
         let rankPowerLife: number = 1
         let rankAllPower: number = 1
         let rankAllPowerLife: number = 1
+        let rankAllWeekPower: number = 1
+        let rankAllWeekPowerLife: number = 1
         for (const c of Object.keys(groupStati)) {
             if (c !== key && groupStati[c].rateAvailable > groupStati[key].rateAvailable) {
                 rankAvailable++
@@ -199,6 +200,8 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
             }
             if (c !== key && groupStati[c].rangePowerSum > groupStati[key].rangePowerSum) {
                 rankSumPower++
+            }if (c !== key && groupStati[c].life > groupStati[key].life) {
+                rankSumLife++
             }
             if (c !== key && groupStati[c].ratePowerLife > groupStati[key].ratePowerLife) {
                 rankPowerLife++
@@ -208,6 +211,10 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
             }
             if (c !== key && groupStati[c].rateAllPowerLife > groupStati[key].rateAllPowerLife) {
                 rankAllPowerLife++
+            }if (c !== key && groupStati[c].allWeekPower > groupStati[key].allWeekPower) {
+                rankAllWeekPower++
+            }if (c !== key && groupStati[c].rateAllWeekPowerLife > groupStati[key].rateAllWeekPowerLife) {
+                rankAllWeekPowerLife++
             }
         }
         groupStati[key].rankAvailable = rankAvailable
@@ -217,6 +224,8 @@ export const exportStati = (dataB: string[][], dataA: string[][], isMerge = fals
         groupStati[key].rankPowerLife = rankPowerLife
         groupStati[key].rankAllPower = rankAllPower
         groupStati[key].rankAllPowerLife = rankAllPowerLife
+        groupStati[key].rankAllWeekPower = rankAllWeekPower
+        groupStati[key].rankAllWeekPowerLife = rankAllWeekPowerLife
     }
     return {
         allMemberCount,

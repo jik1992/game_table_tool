@@ -27,6 +27,10 @@ export type GroupStati = {
     ratePowerLife: number,
     allPower: number,
     rankAllPower: number,
+    allWeekPower: number,
+    rankAllWeekPower: number,
+    rateAllWeekPowerLife: number,
+    rankAllWeekPowerLife: number,
     rateAllPowerLife: number,
     rankAllPowerLife: number,
 }

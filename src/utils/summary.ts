@@ -25,7 +25,7 @@ export const generateSingleSummary = (result: ResultData, filters: string[]) => 
     };
 }
 
-export const generateWeekSummary = (result: ResultData, filters: string [],) => {
+export const generateRangeSummary = (result: ResultData, filters: string [],) => {
     const data: string[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
         data.push([
@@ -55,6 +55,31 @@ export const generateWeekSummary = (result: ResultData, filters: string [],) => 
         ]
     };
 }
+
+export const generateWeekSummary = (result: ResultData, filters: string []) => {
+    const data: string[][] = []
+    Object.keys(result.groupStati).map((groupName, index) => {
+        data.push([
+            groupName,
+            result.groupStati[groupName].allMemberCount as unknown as string,
+            `${(result.groupStati[groupName].life / result.groupStati[groupName].allMemberCount).toFixed(2)}`,
+            result.groupStati[groupName].rankSumLife as unknown as string,
+            result.groupStati[groupName].allWeekPower as unknown as string,
+            result.groupStati[groupName].rankAllWeekPower as unknown as string,
+            result.groupStati[groupName].rateAllWeekPowerLife as unknown as string,
+            result.groupStati[groupName].rankAllWeekPowerLife as unknown as string,
+        ])
+    })
+    return {
+        data: data.filter(value => filters.includes(value[0])).sort((a, b) => {
+            return a[5] < b[5] ? -1 : 1
+        }),
+        columns: [
+            '小组',	'人数',	'人均势力',	'势力排名'	,	'周战功',	'战功排名'	,'战功/势力'	,'伤转排名'
+        ]
+    };
+}
+
 export const generateAllSummary = (result: ResultData, filters: string []) => {
     const data: string[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
