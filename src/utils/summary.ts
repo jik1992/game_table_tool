@@ -8,7 +8,7 @@ export const generateSingleSummary = (result: ResultData, filters: string[]) => 
             result.groupStati[groupName].allMemberCount as unknown as string,
             result.groupStati[groupName].availableMemberCount as unknown as string,
             result.groupStati[groupName].rateAvailable,
-            result.groupStati[groupName].weekPowerAvg as unknown as string,
+            result.groupStati[groupName].rangePowerAvg as unknown as string,
         ])
     })
     return {
@@ -33,7 +33,7 @@ export const generateWeekSummary = (result: ResultData, filters: string []) => {
             result.groupStati[groupName].allMemberCount as unknown as string,
             `${(result.groupStati[groupName].life / result.groupStati[groupName].allMemberCount).toFixed(2)}`,
             result.groupStati[groupName].rankSumPower as unknown as string,
-            result.groupStati[groupName].weekPowerSum as unknown as string,
+            result.groupStati[groupName].rangePowerSum as unknown as string,
             result.groupStati[groupName].rankSumPower as unknown as string,
             result.groupStati[groupName].ratePowerLife as unknown as string,
             result.groupStati[groupName].rankPowerLife as unknown as string

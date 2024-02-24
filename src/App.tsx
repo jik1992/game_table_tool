@@ -339,7 +339,7 @@ export class App extends React.PureComponent<IProps, IState> {
                         {this.state.resultSetting.stati && (
                             <>人数：总人数 {group.allMemberCount}{' '}参战人数{group.availableMemberCount}{' '}
                                 <br/>
-                                参战：比例{group.rateAvailable}%{' '}总战功{group.weekPowerSum}{' '}人均战功{group.weekPowerAvg}
+                                参战：比例{group.rateAvailable}%{' '}总战功{group.rangePowerSum}{' '}人均战功{group.rangePowerAvg}
                                 <br/></>
                         )}
                         {this.state.resultSetting.dead && (<> &缺勤人员&：{group.dead.join('、')}</>)}
