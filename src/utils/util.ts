@@ -12,7 +12,7 @@ export const extractFormatTimeString = (value: string) => {
 }
 
 const availableColumns = [
-    '成员', '战功本周', '战功总量', '助攻本周', '助攻总量', '势力值', '所属阵营', '分组',
+    '成员', '战功本周', '助攻本周', '战功总量', '助攻总量', '势力值', '所属阵营', '分组',
 ]
 export const extractedCSVData = (csv: string) => {
     const lines = csv.split('\n');
@@ -36,6 +36,18 @@ export const extractedCSVData = (csv: string) => {
 }
 const LIMIT_MIN = 100
 
+function getLife(row: string[]) {
+    return row[5];
+}
+
+function getGroupName(row: string[]) {
+    return row[7];
+}
+
+function getPowerWeek(row: string[]) {
+    return Number.parseInt(row[1]);
+}
+
 export const exportStati = (dataB: string[][], dataA: string[][]) => {
     const allMemberCount = dataB.length
     const groupNames: string[] = []
@@ -50,13 +62,13 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
         [key: string]: GroupStati
     } = {}
     for (const row of dataB) {
-        if (!row[7]) {
+        if (!getGroupName(row)) {
             continue
         }
-        if (row[7] in groupStati) {
-            groupStati[row[7]] = {
-                ...groupStati[row[7]],
-                allMemberCount: groupStati[row[7]].allMemberCount + 1,
+        if (getGroupName(row) in groupStati) {
+            groupStati[getGroupName(row)] = {
+                ...groupStati[getGroupName(row)],
+                allMemberCount: groupStati[getGroupName(row)].allMemberCount + 1,
                 availableMemberCount: 0,
                 powerAvg: 0,
                 powerAll: 0,
@@ -66,8 +78,8 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 rateAvailable: 0,
             }
         } else {
-            groupNames.push(row[7])
-            groupStati[row[7]] = {
+            groupNames.push(getGroupName(row))
+            groupStati[getGroupName(row)] = {
                 allMemberCount: 1,
                 availableMemberCount: 0,
                 powerAvg: 0,
@@ -89,15 +101,15 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
         }
     }
     for (const row of dataB) {
-        if (!row[7]) {
+        if (!getGroupName(row)) {
             continue
         }
         const member = row[0]
-        const memberGroup = row[7]
+        const memberGroup = getGroupName(row)
         const rowMemberA = dataA.find(value => value[0] === member)
         let ok = 0
         if (rowMemberA) {
-            ok = Number.parseInt(row[1]) - Number.parseInt(rowMemberA[1])
+            ok = getPowerWeek(row) - getPowerWeek(rowMemberA)
             if (ok >= LIMIT_MIN) {
                 availableMemberCount += 1
                 powerAll += ok
@@ -112,9 +124,9 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 groupStati[memberGroup] = {
                     ...groupStati[memberGroup],
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
-                    life: groupStati[memberGroup].life + Number.parseInt(row[3]),
+                    life: groupStati[memberGroup].life + Number.parseInt(getLife(row)),
                     powerAll: groupStati[memberGroup].powerAll + ok,
-                    allPower: groupStati[memberGroup].allPower + Number.parseInt(row[1]),
+                    allPower: groupStati[memberGroup].allPower + getPowerWeek(row),
                 }
             } else {
                 groupStati[memberGroup] = {
@@ -123,7 +135,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 }
             }
         } else {
-            ok = Number.parseInt(row[1])
+            ok = getPowerWeek(row)
             if (ok >= LIMIT_MIN) {
                 availableMemberCount += 1
                 powerAll += ok
@@ -138,9 +150,9 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 groupStati[memberGroup] = {
                     ...groupStati[memberGroup],
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
-                    life: groupStati[memberGroup].life + Number.parseInt(row[3]),
+                    life: groupStati[memberGroup].life + Number.parseInt(getLife(row)),
                     powerAll: groupStati[memberGroup].powerAll + ok,
-                    allPower: groupStati[memberGroup].allPower + Number.parseInt(row[1]),
+                    allPower: groupStati[memberGroup].allPower + getPowerWeek(row),
                 }
             } else {
 
