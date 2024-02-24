@@ -6,6 +6,7 @@ import {InboxOutlined} from '@ant-design/icons';
 import {UploadChangeParam} from "antd/es/upload/interface";
 import _ from "lodash";
 import moment from "moment";
+import {createMomentTime, extractFormatTimeString} from "./utils/util";
 
 type IProps = {};
 
@@ -398,7 +399,7 @@ export class App extends React.PureComponent<IProps, IState> {
                     </div>
                     标题：考勤助手v0.1测试版<br/>
                     内容：<br/>
-                    统计时间{this.getFormatValue(this.state.selected.fileA)}-{this.getFormatValue(this.state.selected.fileB)}<br/>
+                    统计时间{extractFormatTimeString(this.state.selected.fileA)}-{extractFormatTimeString(this.state.selected.fileB)}<br/>
                     总人数{result.allMemberCount}{' '}参战人数{result.availableMemberCount}{' '}总战功{result.powerAll}{' '}人均战功{result.powerAvg}
                     <br/>
                     最高战功#{result.powerMaxMember}#{' '}最低战功#{result.powerMinMember}{' '}#参战比例{result.rateMember}%<br/>
@@ -471,11 +472,11 @@ export class App extends React.PureComponent<IProps, IState> {
 
     private getStartTimeOptions(timelines: string[]) {
         return timelines.sort((a, b) => {
-            return this.createMomentTime(a) > this.createMomentTime(b) ? -1 : 1
+            return createMomentTime(a) > createMomentTime(b) ? -1 : 1
         }).map((value) => {
             return {
                 value: value,
-                label: this.getFormatValue(value),
+                label: extractFormatTimeString(value),
             }
         });
     }
@@ -485,34 +486,25 @@ export class App extends React.PureComponent<IProps, IState> {
             value: '',
             label: 'no available',
         }]
-        const startTime = this.createMomentTime(this.state.selected.fileA)
+        const startTime = createMomentTime(this.state.selected.fileA)
         return a.filter((value, index) => {
             if (value) {
-                const endTime = this.createMomentTime(value)
+                const endTime = createMomentTime(value)
                 if (startTime < endTime) {
                     return true
                 }
             }
             return false
         }).sort((a, b) => {
-            return this.createMomentTime(a) < this.createMomentTime(b) ? -1 : 1
+            return createMomentTime(a) < createMomentTime(b) ? -1 : 1
         }).map((value) => {
             return {
                 value: value,
-                label: this.getFormatValue(value),
+                label: extractFormatTimeString(value),
             }
         });
     }
 
-    private createMomentTime(value: string) {
-        return moment(this.getFormatValue(value), 'MM/DD hh/mm');
-    }
-
-    private getFormatValue(value: string) {
-        const match = /(\d{4})年(\d{2})月(\d{2})日(\d{2})时(\d{2})分(\d{2})秒/gm.exec(value)
-        if (!match) return ''
-        return `${match[2]}/${match[3]} ${match[4]}:${match[5]}`;
-    }
 
     private getOptions() {
         const owners = new Set(Object.keys(this.allFiles).map(value => {
