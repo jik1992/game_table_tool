@@ -324,8 +324,8 @@ export class App extends React.PureComponent<IProps, IState> {
             manualColumnResize={true}
             autoWrapRow={true}
             autoWrapCol={true}
-            filter={true}
-            dropdownMenu={true}
+            filters={true}
+            dropdownMenu={['filter_by_condition', 'filter_by_value', 'filter_action_bar']}
             licenseKey="d7675-41c63-8a164-ebca2-fb410"
             columnSorting={true}
             contextMenu={['copy', 'cut']}
