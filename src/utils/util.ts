@@ -33,7 +33,7 @@ export const extractedCSVData = (csv: string) => {
     return {headers, data};
 }
 const LIMIT_MIN = 100
-const availableColumns = [
+export const availableColumns = [
     '成员', '战功本周', '助攻本周', '战功总量', '助攻总量', '势力值', '所属阵营', '分组',
 ]
 

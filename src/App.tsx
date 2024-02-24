@@ -4,7 +4,7 @@ import React from 'react';
 import {Button, Checkbox, Radio, Select, Upload} from "antd";
 import {InboxOutlined} from '@ant-design/icons';
 import _ from "lodash";
-import {createMomentTime, exportStati, extractedCSVData, extractFormatTimeString} from "./utils/util";
+import {availableColumns, createMomentTime, exportStati, extractedCSVData, extractFormatTimeString} from "./utils/util";
 
 import "pikaday/css/pikaday.css";
 import {HotTable} from "@handsontable/react";
@@ -31,7 +31,7 @@ type IState = {
         dead: boolean,
         groups: string[]
     },
-    mode: 'text' | 'image' | 'table',
+    mode: 'text' | 'image' | 'table' | 'debug',
     result?: ResultData
 };
 
@@ -213,9 +213,26 @@ export class App extends React.PureComponent<IProps, IState> {
                         options={[
                             {value: 'text', label: '法令模式'},
                             {value: 'table', label: '报表模式'},
+                            {value: 'debug', label: '调试模式'},
                         ]}
                         onChange={(e) => {
                             this.setState({mode: e as 'text' | 'image' | 'table'})
+                            if (e === 'debug') {
+                                this.setState({
+                                    resultSetting: {
+                                        ...this.state.resultSetting,
+                                        groups: [this.state.resultSetting.groups[0]]
+                                    }
+                                })
+                            } else {
+                                this.setState({
+                                    resultSetting: {
+                                        ...this.state.resultSetting,
+                                        // @ts-ignore
+                                        groups: this.state.result.groupNames
+                                    }
+                                })
+                            }
                         }}
                     />
                     {Object.keys(result.groupStati).map(value => {
@@ -242,17 +259,38 @@ export class App extends React.PureComponent<IProps, IState> {
                             }}
                             checked={this.state.resultSetting.groups.includes(value)}>{value}</Checkbox>
                     })}
+                    {this.state.mode === "debug" && this.renderDebugResult()}
                     {this.state.mode === "table" && this.renderTableResult()}
                     {this.state.mode === "text" && this.renderTextResult()}
                 </div>
             )}
-            {/*<table dangerouslySetInnerHTML={{*/}
-            {/*    __html: this.state.csvResult*/}
-            {/*}}>*/}
-            {/*</table>*/}
         </div>
     }
 
+    private renderDebugResult() {
+        const {result, resultSetting} = this.state
+
+        if (!result || !this.state.selected.fileA || !this.state.selected.fileB) {
+            return ''
+        }
+
+        const dataA = this.allFiles[this.state.selected.fileA].data
+        const dataB = this.allFiles[this.state.selected.fileB].data
+
+        return <div>
+            {
+                this.renderTable({
+                    data: dataA.filter(value => resultSetting.groups.includes(value[7])),
+                    columns: availableColumns
+                })
+            } {
+            this.renderTable({
+                data: dataB.filter(value => resultSetting.groups.includes(value[7])),
+                columns: availableColumns
+            })
+        }
+        </div>;
+    }
 
     private renderTableResult() {
         const {result} = this.state
