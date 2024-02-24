@@ -25,7 +25,7 @@ export const generateSingleSummary = (result: ResultData, filters: string[]) => 
     };
 }
 
-export const generateWeekSummary = (result: ResultData, filters: string []) => {
+export const generateWeekSummary = (result: ResultData, filters: string [],) => {
     const data: string[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
         data.push([
@@ -48,7 +48,7 @@ export const generateWeekSummary = (result: ResultData, filters: string []) => {
             "人数",
             "人均势力",
             "势力排名",
-            "周总战功",
+            `当前区间战功`,
             "战功排名",
             "战功/势力",
             "伤转排名",
