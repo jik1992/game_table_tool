@@ -38,7 +38,7 @@ const availableColumns = [
 ]
 
 function getLife(row: string[]) {
-    return row[5];
+    return Number.parseInt(row[5]);
 }
 
 function getGroupName(row: string[]) {
@@ -47,6 +47,10 @@ function getGroupName(row: string[]) {
 
 function getPowerWeek(row: string[]) {
     return Number.parseInt(row[1]);
+}
+
+function getPowerAll(row: string[]) {
+    return Number.parseInt(row[3]);
 }
 
 export const exportStati = (dataB: string[][], dataA: string[][]) => {
@@ -125,9 +129,9 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 groupStati[memberGroup] = {
                     ...groupStati[memberGroup],
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
-                    life: groupStati[memberGroup].life + Number.parseInt(getLife(row)),
+                    life: groupStati[memberGroup].life + getLife(row),
                     powerAll: groupStati[memberGroup].powerAll + ok,
-                    allPower: groupStati[memberGroup].allPower + getPowerWeek(row),
+                    allPower: groupStati[memberGroup].allPower + getPowerAll(row),
                 }
             } else {
                 groupStati[memberGroup] = {
@@ -151,9 +155,9 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 groupStati[memberGroup] = {
                     ...groupStati[memberGroup],
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
-                    life: groupStati[memberGroup].life + Number.parseInt(getLife(row)),
+                    life: groupStati[memberGroup].life + (getLife(row)),
                     powerAll: groupStati[memberGroup].powerAll + ok,
-                    allPower: groupStati[memberGroup].allPower + getPowerWeek(row),
+                    allPower: groupStati[memberGroup].allPower + getPowerAll(row),
                 }
             } else {
 
