@@ -219,7 +219,9 @@ export class App extends React.PureComponent<IProps, IState> {
                 {this.existResult() && (
                     <Button onClick={() => {
                         if (this.refPhoto.current) {
-                            html2canvas(this.refPhoto.current).then(async (canvas) => {
+                            html2canvas(this.refPhoto.current, {
+                                scale: 2,
+                            }).then(async (canvas) => {
                                 const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
                                 // const link = document.createElement('a')
                                 // link.download = 'your-image.png'
