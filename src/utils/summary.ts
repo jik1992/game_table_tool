@@ -1,6 +1,6 @@
 import {ResultData} from "./app";
 
-export const generateSingleSummary = (result: ResultData) => {
+export const generateSingleSummary = (result: ResultData, filters: string[]) => {
     const data: string[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
         data.push([
@@ -12,7 +12,7 @@ export const generateSingleSummary = (result: ResultData) => {
         ])
     })
     return {
-        data,
+        data: data.filter(value => filters.includes(value[0])),
         columns: [
             "小组",
             "人数",
@@ -23,7 +23,7 @@ export const generateSingleSummary = (result: ResultData) => {
     };
 }
 
-export const generateWeekSummary = (result: ResultData) => {
+export const generateWeekSummary = (result: ResultData, filters: string []) => {
     const data: string[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
         data.push([
@@ -38,7 +38,7 @@ export const generateWeekSummary = (result: ResultData) => {
         ])
     })
     return {
-        data: data.sort((a, b) => {
+        data: data.filter(value => filters.includes(value[0])).sort((a, b) => {
             return a[7] < b[7] ? -1 : 1
         }),
         columns: [
@@ -53,20 +53,20 @@ export const generateWeekSummary = (result: ResultData) => {
         ]
     };
 }
-export const generateAllSummary = (result: ResultData) => {
+export const generateAllSummary = (result: ResultData, filters: string []) => {
     const data: string[][] = []
     Object.keys(result.groupStati).map((groupName, index) => {
         data.push([
             groupName,
             result.groupStati[groupName].allMemberCount as unknown as string,
-            '',
-            '',
-            '',
-            ''
+            result.groupStati[groupName].allPower as unknown as string,
+            result.groupStati[groupName].rankAllPower as unknown as string,
+            result.groupStati[groupName].rateAllPowerLife as unknown as string,
+            result.groupStati[groupName].rankAllPowerLife as unknown as string
         ])
     })
     return {
-        data: data.sort((a, b) => {
+        data: data.filter(value => filters.includes(value[0])).sort((a, b) => {
             return a[7] < b[7] ? -1 : 1
         }),
         columns: [

@@ -205,6 +205,30 @@ export class App extends React.PureComponent<IProps, IState> {
                             this.setState({mode: e as 'text' | 'image' | 'table'})
                         }}
                     />
+                    {Object.keys(result.groupStati).map(value => {
+                        return <Checkbox
+                            onChange={(s) => {
+                                console.info(s.target)
+                                if (s.target.checked) {
+                                    this.setState({
+                                        resultSetting: {
+                                            ...this.state.resultSetting,
+                                            groups: this.state.resultSetting.groups.concat(value)
+                                        }
+                                    })
+                                } else {
+                                    const groups = _.cloneDeep(this.state.resultSetting.groups)
+                                    _.remove(groups, v => v === value)
+                                    this.setState({
+                                        resultSetting: {
+                                            ...this.state.resultSetting,
+                                            groups: groups
+                                        }
+                                    })
+                                }
+                            }}
+                            checked={this.state.resultSetting.groups.includes(value)}>{value}</Checkbox>
+                    })}
                     {this.state.mode === "table" && this.renderTableResult()}
                     {this.state.mode === "text" && this.renderTextResult()}
                 </div>
@@ -224,9 +248,9 @@ export class App extends React.PureComponent<IProps, IState> {
             return ''
         }
         return <div>
-            {this.renderTable(generateSingleSummary(result))}
-            {this.renderTable(generateWeekSummary(result))}
-            {this.renderTable(generateAllSummary(result))}
+            {this.renderTable(generateSingleSummary(result, this.state.resultSetting.groups))}
+            {this.renderTable(generateWeekSummary(result, this.state.resultSetting.groups))}
+            {this.renderTable(generateAllSummary(result, this.state.resultSetting.groups))}
         </div>;
     }
 
@@ -274,30 +298,6 @@ export class App extends React.PureComponent<IProps, IState> {
                             }
                         })
                     }} checked={this.state.resultSetting.dead}>显示缺勤</Checkbox>
-                    {Object.keys(result.groupStati).map(value => {
-                        return <Checkbox
-                            onChange={(s) => {
-                                console.info(s.target)
-                                if (s.target.checked) {
-                                    this.setState({
-                                        resultSetting: {
-                                            ...this.state.resultSetting,
-                                            groups: this.state.resultSetting.groups.concat(value)
-                                        }
-                                    })
-                                } else {
-                                    const groups = _.cloneDeep(this.state.resultSetting.groups)
-                                    _.remove(groups, v => v === value)
-                                    this.setState({
-                                        resultSetting: {
-                                            ...this.state.resultSetting,
-                                            groups: groups
-                                        }
-                                    })
-                                }
-                            }}
-                            checked={this.state.resultSetting.groups.includes(value)}>{value}</Checkbox>
-                    })}
                 </div>
                 标题：考勤助手v0.1测试版<br/>
                 内容：<br/>

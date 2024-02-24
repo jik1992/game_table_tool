@@ -83,6 +83,10 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                 rateAvailable: 0,
                 rankPowerLife: 0,
                 ratePowerLife: 0,
+                allPower: 0,
+                rateAllPowerLife: 0,
+                rankAllPower: 0,
+                rankAllPowerLife: 0,
             }
         }
     }
@@ -112,6 +116,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
                     life: groupStati[memberGroup].life + Number.parseInt(row[3]),
                     powerAll: groupStati[memberGroup].powerAll + ok,
+                    allPower: groupStati[memberGroup].allPower + Number.parseInt(row[1]),
                 }
             } else {
                 groupStati[memberGroup] = {
@@ -137,6 +142,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
                     availableMemberCount: groupStati[memberGroup].availableMemberCount + 1,
                     life: groupStati[memberGroup].life + Number.parseInt(row[3]),
                     powerAll: groupStati[memberGroup].powerAll + ok,
+                    allPower: groupStati[memberGroup].allPower + Number.parseInt(row[1]),
                 }
             } else {
 
@@ -148,6 +154,7 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
         groupStati[key].powerAvg = Number.parseInt((groupStati[key].powerAll / groupStati[key].availableMemberCount).toFixed(0))
         groupStati[key].rateAvailable = Number.parseInt((groupStati[key].availableMemberCount / groupStati[key].allMemberCount * 100).toFixed(0))
         groupStati[key].ratePowerLife = groupStati[key].powerAll / groupStati[key].life
+        groupStati[key].rateAllPowerLife = groupStati[key].allPower / groupStati[key].life
     }
     const powerAvg = powerAll / availableMemberCount;
     const rateMember = Number.parseInt((availableMemberCount / allMemberCount * 100).toFixed(0));
@@ -157,6 +164,8 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
         let rankSumPower: number = 1
         let rankSumLife: number = 1
         let rankPowerLife: number = 1
+        let rankAllPower: number = 1
+        let rankAllPowerLife: number = 1
         for (const c of Object.keys(groupStati)) {
             if (c !== key && groupStati[c].rateAvailable > groupStati[key].rateAvailable) {
                 rankAvailable++
@@ -170,12 +179,20 @@ export const exportStati = (dataB: string[][], dataA: string[][]) => {
             if (c !== key && groupStati[c].ratePowerLife > groupStati[key].ratePowerLife) {
                 rankPowerLife++
             }
+            if (c !== key && groupStati[c].allPower > groupStati[key].allPower) {
+                rankAllPower++
+            }
+            if (c !== key && groupStati[c].rateAllPowerLife > groupStati[key].rateAllPowerLife) {
+                rankAllPowerLife++
+            }
         }
         groupStati[key].rankAvailable = rankAvailable
         groupStati[key].rankSumPower = rankSumPower
         groupStati[key].rankAvgPower = rankAvgPower
         groupStati[key].rankSumLife = rankSumLife
         groupStati[key].rankPowerLife = rankPowerLife
+        groupStati[key].rankAllPower = rankAllPower
+        groupStati[key].rankAllPowerLife = rankAllPowerLife
     }
     return {
         allMemberCount,
