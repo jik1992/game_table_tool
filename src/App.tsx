@@ -308,21 +308,43 @@ export class App extends React.PureComponent<IProps, IState> {
             return ''
         }
 
-        const dataA = this.allFiles[this.state.selected.fileA].data
-        const dataB = this.allFiles[this.state.selected.fileB].data
-
+        const dataA = this.allFiles[this.state.selected.fileA].data.filter(value => resultSetting.groups.includes(value[7]))
+        const dataB = this.allFiles[this.state.selected.fileB].data.filter(value => resultSetting.groups.includes(value[7]))
+        const columns=availableColumns.map(value => `表1 ${value}`).concat(availableColumns.map(value => `表2 ${value}`))
+        const bNames=new Set<string>(dataB.map(value => value[0]))
+        for (let i = 0; i < dataA.length; i++) {
+            const bData=dataB.find(value => value[0]===dataA[i][0])
+            if (bData){
+                dataA[i]=dataA[i].concat(bData)
+                bNames.delete(bData[0])
+            }
+        }
+        if (bNames.size!==0){
+            bNames.forEach(bName => {
+                const bData=dataB.find(value => value[0]===bName)
+                if(bData){
+                    let row=[]
+                    for (const availableColumn of availableColumns) {
+                        row.push("")
+                    }
+                    row=row.concat(bData)
+                    dataA.push(row)
+                }
+            })
+        }
+        columns.push('势力差')
+        for (let i = 0; i < dataA.length; i++) {
+            if (dataA[i][13]&&dataA[i][5]){
+                dataA[i].push(String(Number.parseInt(dataA[i][13])-Number.parseInt(dataA[i][5])))
+            }
+        }
         return <div>
             {
                 this.renderTable({
-                    data: dataA.filter(value => resultSetting.groups.includes(value[7])),
-                    columns: availableColumns
+                    data: dataA,
+                    columns: columns
                 })
-            } {
-            this.renderTable({
-                data: dataB.filter(value => resultSetting.groups.includes(value[7])),
-                columns: availableColumns
-            })
-        }
+            }
         </div>;
     }
 
