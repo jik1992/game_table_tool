@@ -333,11 +333,18 @@ export class App extends React.PureComponent<IProps, IState> {
             })
         }
         columns.push('势力差')
+        columns.push('战功差')
+        columns.push('助攻差')
+        columns.push('攻势比')
         for (let i = 0; i < dataA.length; i++) {
             if (dataA[i][13]&&dataA[i][5]){
                 dataA[i].push(String(Number.parseInt(dataA[i][13])-Number.parseInt(dataA[i][5])))
+                dataA[i].push(String(Number.parseInt(dataA[i][11])-Number.parseInt(dataA[i][3])))
+                dataA[i].push(String(Number.parseInt(dataA[i][12])-Number.parseInt(dataA[i][4])))
+                dataA[i].push(String(((Number.parseInt(dataA[i][17])+Number.parseInt(dataA[i][18]))/Number.parseInt(dataA[i][13])).toFixed(2)))
             }
         }
+        console.info(dataA)
         return <div>
             {
                 this.renderTable({
@@ -370,7 +377,7 @@ export class App extends React.PureComponent<IProps, IState> {
             data={source.data}
             colHeaders={source.columns}
             language={zhCN.languageCode}
-            width={'100%'}
+            width={'auto'}
             height={'auto'}
             rowHeaders={true}
             colWidths={100}
