@@ -85,10 +85,191 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
     render() {
         const {result} = this.state
         return <>
-            <Upload.Dragger
+            {this.state.fileCount ? (
+                <div>
+                    <div style={{
+                        display: "inline-flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        width: '100%'
+                    }}>
+                        {this.state.fileCount > 0 &&
+                            <div style={{fontSize: 12, color: "red"}}>成功加载 {this.state.fileCount} 文件</div>}
+                        盟主:
+                        <Select
+                            style={{width: 200}}
+                            value={this.state.selected.owner}
+                            options={this.getOptions()}
+                            onChange={(value, option) => {
+                                const a: string[] = []
+                                for (const key of Object.keys(this.allFiles)) {
+                                    if (this.allFiles[key].owner === value) {
+                                        a.push(key)
+                                    }
+                                }
+                                this.setState({
+                                    selected: {
+                                        owner: value,
+                                        fileA: undefined,
+                                        fileB: undefined,
+                                    },
+                                    optionsA: a,
+                                    result: undefined
+                                })
+                            }}
+                        />
+                        开始时间:
+                        <Select style={{width: 150}}
+                                value={this.state.selected.fileA}
+                                options={this.getStartTimeOptions(this.state.optionsA)}
+                                onChange={(value, option) => {
+                                    const a: string[] = []
+                                    for (const key of Object.keys(this.allFiles)) {
+                                        if (this.allFiles[key].owner === this.state.selected.owner) {
+                                            a.push(key)
+                                        }
+                                    }
+                                    this.setState({
+                                        selected: {
+                                            ...this.state.selected,
+                                            fileA: value,
+                                            fileB: undefined
+                                        },
+                                        optionsB: a
+                                    })
+                                }}
+                        />
+                        结束时间:
+                        <Select style={{width: 150}}
+                                value={this.state.selected.fileB}
+                                options={this.getEndTimeOptions(this.state.optionsB)}
+                                onChange={(value, option) => {
+                                    this.setState({
+                                        selected: {
+                                            ...this.state.selected,
+                                            fileB: value,
+
+                                        },
+                                        result: undefined
+                                    })
+                                }}
+                        /> [战功/助攻]合并<Checkbox checked={this.state.resultSetting.mergePower} onChange={(e) => {
+                        this.setState({
+                            resultSetting: {
+                                ...this.state.resultSetting,
+                                mergePower: e.target.checked
+                            }
+                        })
+                    }}/>
+                        <Button
+                            style={{marginLeft: 5}}
+                            type={"primary"}
+                            onClick={() => {
+                                const fileA = Object.keys(this.allFiles).find(value => this.allFiles[value].owner === this.state.selected.owner &&
+                                    value === this.state.selected.fileA)
+                                const fileB = Object.keys(this.allFiles).find(value => this.allFiles[value].owner === this.state.selected.owner &&
+                                    value === this.state.selected.fileB)
+                                if (fileA && fileB) {
+                                    const dataA = this.allFiles[fileA].data
+                                    const dataB = this.allFiles[fileB].data
+                                    const result = exportStati(dataB, dataA, this.state.resultSetting.mergePower);
+                                    this.setState({
+                                        result: {
+                                            ...result,
+                                        },
+                                        resultSetting: {
+                                            ...this.state.resultSetting,
+                                            rank: true,
+                                            dead: true,
+                                            groups: result.groupNames
+                                        }
+                                    })
+                                }
+                            }
+                            }
+                            disabled={!this.state.selected || !this.state.selected.fileB}
+                        >生成战功报表</Button>
+                        {this.existResult() && (
+                            <Button onClick={() => {
+                                if (this.refPhoto.current) {
+                                    html2canvas(this.refPhoto.current, {
+                                        scale: 2,
+                                    }).then(async (canvas) => {
+                                        const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
+                                        // const link = document.createElement('a')
+                                        // link.download = 'your-image.png'
+                                        // link.href = dataUrl
+                                        // link.click()
+                                        await this.copyImgToClipboard(dataUrl)
+                                        message.success('copied snapshot successful.')
+                                    });
+                                }
+                            }}>copy</Button>
+                        )}
+                    </div>
+
+                    {this.existResult() && (
+                        <div ref={this.refPhoto}>
+                            <Select
+                                value={this.state.mode}
+                                options={[
+                                    {value: 'text', label: '法令模式'},
+                                    {value: 'table', label: '报表模式'},
+                                    {value: 'debug', label: '调试模式'},
+                                ]}
+                                onChange={(e) => {
+                                    this.setState({mode: e as 'text' | 'image' | 'table'})
+                                    if (e === 'debug') {
+                                        this.setState({
+                                            resultSetting: {
+                                                ...this.state.resultSetting,
+                                                groups: [this.state.resultSetting.groups[0]]
+                                            }
+                                        })
+                                    } else {
+                                        this.setState({
+                                            resultSetting: {
+                                                ...this.state.resultSetting,
+                                                // @ts-ignore
+                                                groups: this.state.result.groupNames
+                                            }
+                                        })
+                                    }
+                                }}
+                            />
+                            {result && Object.keys(result.groupStati).map(value => {
+                                return <Checkbox
+                                    onChange={(s) => {
+                                        console.info(s.target)
+                                        if (s.target.checked) {
+                                            this.setState({
+                                                resultSetting: {
+                                                    ...this.state.resultSetting,
+                                                    groups: this.state.resultSetting.groups.concat(value)
+                                                }
+                                            })
+                                        } else {
+                                            const groups = _.cloneDeep(this.state.resultSetting.groups)
+                                            _.remove(groups, v => v === value)
+                                            this.setState({
+                                                resultSetting: {
+                                                    ...this.state.resultSetting,
+                                                    groups: groups
+                                                }
+                                            })
+                                        }
+                                    }}
+                                    checked={this.state.resultSetting.groups.includes(value)}>{value}</Checkbox>
+                            })}
+                            {this.state.mode === "debug" && this.renderDebugResult()}
+                            {this.state.mode === "table" && this.renderTableResult()}
+                            {this.state.mode === "text" && this.renderTextResult()}
+                        </div>
+                    )}
+                </div>
+            ) : (<Upload.Dragger
                 style={{
                     width: '100%',
-                    height: 100,
                 }}
                 showUploadList={false}
                 beforeUpload={(file, FileList) => {
@@ -117,186 +298,9 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                     <InboxOutlined/>
                 </p>
                 <p className="ant-upload-text">上传战功报表文件，如：同盟统计2024年02月23日21时16分25秒.csv</p>
-            </Upload.Dragger>
-            <div style={{
-                display: "inline-flex",
-                justifyContent: "center",
-                alignItems: "center",
-                width: '100%'
-            }}>
-                {this.state.fileCount > 0 &&
-                    <div style={{fontSize: 12, color: "red"}}>成功加载 {this.state.fileCount} 文件</div>}
-                盟主:
-                <Select
-                    style={{width: 200}}
-                    value={this.state.selected.owner}
-                    options={this.getOptions()}
-                    onChange={(value, option) => {
-                        const a: string[] = []
-                        for (const key of Object.keys(this.allFiles)) {
-                            if (this.allFiles[key].owner === value) {
-                                a.push(key)
-                            }
-                        }
-                        this.setState({
-                            selected: {
-                                owner: value,
-                                fileA: undefined,
-                                fileB: undefined,
-                            },
-                            optionsA: a,
-                            result: undefined
-                        })
-                    }}
-                />
-                开始时间:
-                <Select style={{width: 150}}
-                        value={this.state.selected.fileA}
-                        options={this.getStartTimeOptions(this.state.optionsA)}
-                        onChange={(value, option) => {
-                            const a: string[] = []
-                            for (const key of Object.keys(this.allFiles)) {
-                                if (this.allFiles[key].owner === this.state.selected.owner) {
-                                    a.push(key)
-                                }
-                            }
-                            this.setState({
-                                selected: {
-                                    ...this.state.selected,
-                                    fileA: value,
-                                    fileB: undefined
-                                },
-                                optionsB: a
-                            })
-                        }}
-                />
-                结束时间:
-                <Select style={{width: 150}}
-                        value={this.state.selected.fileB}
-                        options={this.getEndTimeOptions(this.state.optionsB)}
-                        onChange={(value, option) => {
-                            this.setState({
-                                selected: {
-                                    ...this.state.selected,
-                                    fileB: value,
+            </Upload.Dragger>)}
 
-                                },
-                                result: undefined
-                            })
-                        }}
-                /> [战功/助攻]合并<Checkbox checked={this.state.resultSetting.mergePower} onChange={(e) => {
-                this.setState({
-                    resultSetting: {
-                        ...this.state.resultSetting,
-                        mergePower: e.target.checked
-                    }
-                })
-            }}/>
-                <Button
-                    style={{marginLeft: 5}}
-                    type={"primary"}
-                    onClick={() => {
-                        const fileA = Object.keys(this.allFiles).find(value => this.allFiles[value].owner === this.state.selected.owner &&
-                            value === this.state.selected.fileA)
-                        const fileB = Object.keys(this.allFiles).find(value => this.allFiles[value].owner === this.state.selected.owner &&
-                            value === this.state.selected.fileB)
-                        if (fileA && fileB) {
-                            const dataA = this.allFiles[fileA].data
-                            const dataB = this.allFiles[fileB].data
-                            const result = exportStati(dataB, dataA, this.state.resultSetting.mergePower);
-                            this.setState({
-                                result: {
-                                    ...result,
-                                },
-                                resultSetting: {
-                                    ...this.state.resultSetting,
-                                    rank: true,
-                                    dead: true,
-                                    groups: result.groupNames
-                                }
-                            })
-                        }
-                    }
-                    }
-                    disabled={!this.state.selected || !this.state.selected.fileB}
-                >生成战功报表</Button>
-                {this.existResult() && (
-                    <Button onClick={() => {
-                        if (this.refPhoto.current) {
-                            html2canvas(this.refPhoto.current, {
-                                scale: 2,
-                            }).then(async (canvas) => {
-                                const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
-                                // const link = document.createElement('a')
-                                // link.download = 'your-image.png'
-                                // link.href = dataUrl
-                                // link.click()
-                                await this.copyImgToClipboard(dataUrl)
-                                message.success('copied snapshot successful.')
-                            });
-                        }
-                    }}>copy</Button>
-                )}
-            </div>
 
-            {this.existResult() && (
-                <div ref={this.refPhoto}>
-                    <Select
-                        value={this.state.mode}
-                        options={[
-                            {value: 'text', label: '法令模式'},
-                            {value: 'table', label: '报表模式'},
-                            {value: 'debug', label: '调试模式'},
-                        ]}
-                        onChange={(e) => {
-                            this.setState({mode: e as 'text' | 'image' | 'table'})
-                            if (e === 'debug') {
-                                this.setState({
-                                    resultSetting: {
-                                        ...this.state.resultSetting,
-                                        groups: [this.state.resultSetting.groups[0]]
-                                    }
-                                })
-                            } else {
-                                this.setState({
-                                    resultSetting: {
-                                        ...this.state.resultSetting,
-                                        // @ts-ignore
-                                        groups: this.state.result.groupNames
-                                    }
-                                })
-                            }
-                        }}
-                    />
-                    {result && Object.keys(result.groupStati).map(value => {
-                        return <Checkbox
-                            onChange={(s) => {
-                                console.info(s.target)
-                                if (s.target.checked) {
-                                    this.setState({
-                                        resultSetting: {
-                                            ...this.state.resultSetting,
-                                            groups: this.state.resultSetting.groups.concat(value)
-                                        }
-                                    })
-                                } else {
-                                    const groups = _.cloneDeep(this.state.resultSetting.groups)
-                                    _.remove(groups, v => v === value)
-                                    this.setState({
-                                        resultSetting: {
-                                            ...this.state.resultSetting,
-                                            groups: groups
-                                        }
-                                    })
-                                }
-                            }}
-                            checked={this.state.resultSetting.groups.includes(value)}>{value}</Checkbox>
-                    })}
-                    {this.state.mode === "debug" && this.renderDebugResult()}
-                    {this.state.mode === "table" && this.renderTableResult()}
-                    {this.state.mode === "text" && this.renderTextResult()}
-                </div>
-            )}
         </>
     }
 

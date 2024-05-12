@@ -68,7 +68,7 @@ export class App extends React.PureComponent<IProps, IState> {
                     }}
                 />
             </Header>
-            <Content style={{padding: '0 48px'}}>
+            <Content style={{padding: '0 48px', minHeight: 'calc(100vh - 138px)'}}>
                 {mode === 'check' && <CheckerContainer/>}
                 {mode === 'map' && <MapResource/>}
             </Content>
