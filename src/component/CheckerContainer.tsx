@@ -21,6 +21,7 @@ import {generateAllSummary, generateRangeSummary, generateWeekSummary} from "../
 import {registerAllModules} from 'handsontable/registry';
 import {registerLanguageDictionary, zhCN} from 'handsontable/i18n';
 import html2canvas from "html2canvas";
+import HotTableClass from "@handsontable/react/hotTableClass";
 
 registerLanguageDictionary(zhCN);
 
@@ -190,22 +191,26 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                             disabled={!this.state.selected || !this.state.selected.fileB}
                         >生成战功报表</Button>
                         {this.existResult() && (
-                            <Button onClick={() => {
-                                if (this.refPhoto.current) {
-                                    html2canvas(this.refPhoto.current, {
-                                        scale: 2,
-                                    }).then(async (canvas) => {
-                                        const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
-                                        // const link = document.createElement('a')
-                                        // link.download = 'your-image.png'
-                                        // link.href = dataUrl
-                                        // link.click()
-                                        await this.copyImgToClipboard(dataUrl)
-                                        message.success('copied snapshot successful.')
-                                    });
-                                }
-                            }}>copy</Button>
+                            <>
+                                <Button style={{marginLeft:4}} onClick={() => {
+                                    if (this.refPhoto.current) {
+                                        html2canvas(this.refPhoto.current, {
+                                            scale: 2,
+                                        }).then(async (canvas) => {
+                                            const dataUrl = canvas.toDataURL('image/png') //轉換成 Data URL 表示格式的png圖檔
+                                            await this.copyImgToClipboard(dataUrl)
+                                            message.success('copied snapshot successful.')
+                                        });
+                                    }
+                                }}>export Image</Button>
+                                {this.state.mode === "debug" && (
+                                    <Button style={{marginLeft:4}} onClick={this.exportToCsv}>
+                                        export CSV
+                                    </Button>
+                                )}</>
+
                         )}
+
                     </div>
 
                     {this.existResult() && (
@@ -381,9 +386,34 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
         </div>;
     }
 
+    hotTableRef = React.createRef<HotTableClass>()
+
+    private exportToCsv = () => {
+        if (this.hotTableRef.current) {
+            const hot = this.hotTableRef.current.hotInstance;
+            if (hot) {
+                const exportPlugin = hot.getPlugin('exportFile');
+                const blob = exportPlugin.exportAsBlob('csv')
+                const link = document.createElement('a');
+                if (link.download !== undefined) { // feature detection
+                    // Browsers that support HTML5 download attribute
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', 'export.csv');
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
+        }
+    };
+
+
     // https://handsontable.com/docs/react-data-grid/
     private renderTable(source: { data: string[][]; columns: string[] }, height = 'auto') {
         return <HotTable
+            ref={this.hotTableRef}
             data={source.data}
             colHeaders={source.columns}
             language={zhCN.languageCode}
