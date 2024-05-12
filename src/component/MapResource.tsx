@@ -207,7 +207,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                                 if (this.state.filerType === "gold" && values[4] !== '铜') {
                                                     return false
                                                 }
-                                                if (this.state.filerType === "rice" && values[4] === '粮') {
+                                                if (this.state.filerType === "rice" && values[4] !== '粮') {
                                                     return false
                                                 }
                                             }
