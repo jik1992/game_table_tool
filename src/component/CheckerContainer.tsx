@@ -192,7 +192,7 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                         >生成战功报表</Button>
                         {this.existResult() && (
                             <>
-                                <Button style={{marginLeft:4}} onClick={() => {
+                                <Button style={{marginLeft: 4}} onClick={() => {
                                     if (this.refPhoto.current) {
                                         html2canvas(this.refPhoto.current, {
                                             scale: 2,
@@ -204,7 +204,7 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                                     }
                                 }}>export Image</Button>
                                 {this.state.mode === "debug" && (
-                                    <Button style={{marginLeft:4}} onClick={this.exportToCsv}>
+                                    <Button style={{marginLeft: 4}} onClick={this.exportToCsv}>
                                         export CSV
                                     </Button>
                                 )}</>
@@ -321,7 +321,7 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
             return ''
         }
 
-        const dataA = this.allFiles[this.state.selected.fileA].data.filter(value => resultSetting.groups.includes(value[7]))
+        let dataA = this.allFiles[this.state.selected.fileA].data.filter(value => resultSetting.groups.includes(value[7]))
         const dataB = this.allFiles[this.state.selected.fileB].data.filter(value => resultSetting.groups.includes(value[7]))
         let columns = availableColumns.map(value => `表1 ${value}`).concat(availableColumns.map(value => `表2 ${value}`))
         const bNames = new Set<string>(dataB.map(value => value[0]))
@@ -337,9 +337,7 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                 const bData = dataB.find(value => value[0] === bName)
                 if (bData) {
                     let row = [bData[0]]
-                    for (const availableColumn of availableColumns) {
-                        row.push("")
-                    }
+                    row = row.concat(['', '', '', ''])
                     row = row.concat(bData.slice(1))
                     dataA.push(row)
                 }
@@ -356,9 +354,13 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                 const newColumns = [life, power.toFixed(0), helpPower.toFixed(0), result]
                 dataA[i] = [dataA[i][0]].concat(newColumns).concat(dataA[i].slice(1))
             } else {
-                dataA[i] = [dataA[i][0]].concat(['', '', '', '']).concat(dataA[i].slice(1))
+                dataA[i] = [dataA[i][0]].concat(['', '', '', '-1']).concat(dataA[i].slice(1))
             }
         }
+        dataA = dataA.sort((a, b) => {
+            if (a[4] === b[4]) return 0;
+            return Number.parseFloat(a[4]) > Number.parseFloat(b[4]) ? -1 : 1
+        })
         console.info(dataA)
         return <div>
             {
