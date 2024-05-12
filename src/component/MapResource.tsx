@@ -313,11 +313,11 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                         if (o) {
                             o[7] = value.owner
                             o[8] = value.group
-                            return [value.owner, value.group, `${value.x},${value.y}`, o[0], o[1], o[2], o[3], o[4]]
+                            return [value.group, value.owner, `${value.x},${value.y}`, o[0], o[1], o[2], o[3], o[4]]
                         }
                         return ['', '', '', '', '', '', '']
                     })}
-                    colHeaders={['拥有人', '分组', '坐标', 'id', '地图', '郡', '等级', '类型']}
+                    colHeaders={['分组', '拥有人', '坐标', 'id', '地图', '郡', '等级', '类型']}
                     language={zhCN.languageCode}
                     width={'100%'}
                     height={'85vh'}
