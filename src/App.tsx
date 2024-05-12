@@ -27,7 +27,7 @@ type IState = {
 export class App extends React.PureComponent<IProps, IState> {
 
     state: IState = {
-        mode: "check"
+        mode: "map"
     };
 
     componentDidMount() {
@@ -58,7 +58,7 @@ export class App extends React.PureComponent<IProps, IState> {
                 <Menu
                     theme="dark"
                     mode="horizontal"
-                    defaultSelectedKeys={['check']}
+                    defaultSelectedKeys={['map']}
                     items={items}
                     style={{flex: 1, minWidth: 0}}
                     onSelect={(e) => {
@@ -67,14 +67,12 @@ export class App extends React.PureComponent<IProps, IState> {
                         })
                     }}
                 />
+                <span>Design Created by 烽火 ©{new Date().getFullYear()}</span>
             </Header>
-            <Content style={{padding: '0 48px', minHeight: 'calc(100vh - 138px)'}}>
+            <Content style={{padding: '0 48px', height: 'calc(100vh - 66px)', overflowY: 'auto'}}>
                 {mode === 'check' && <CheckerContainer/>}
                 {mode === 'map' && <MapResource/>}
             </Content>
-            <Footer style={{textAlign: 'center'}}>
-                Design Created by 烽火 ©{new Date().getFullYear()}
-            </Footer>
         </Layout>
 
     }

@@ -66,7 +66,7 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
             dead: true,
             groups: []
         },
-        mode: 'table'
+        mode: 'debug'
     };
 
     componentDidMount() {
@@ -213,9 +213,9 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                             <Select
                                 value={this.state.mode}
                                 options={[
+                                    {value: 'debug', label: '考勤模式'},
                                     {value: 'text', label: '法令模式'},
                                     {value: 'table', label: '报表模式'},
-                                    {value: 'debug', label: '调试模式'},
                                 ]}
                                 onChange={(e) => {
                                     this.setState({mode: e as 'text' | 'image' | 'table'})
@@ -318,7 +318,7 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
 
         const dataA = this.allFiles[this.state.selected.fileA].data.filter(value => resultSetting.groups.includes(value[7]))
         const dataB = this.allFiles[this.state.selected.fileB].data.filter(value => resultSetting.groups.includes(value[7]))
-        const columns = availableColumns.map(value => `表1 ${value}`).concat(availableColumns.map(value => `表2 ${value}`))
+        let columns = availableColumns.map(value => `表1 ${value}`).concat(availableColumns.map(value => `表2 ${value}`))
         const bNames = new Set<string>(dataB.map(value => value[0]))
         for (let i = 0; i < dataA.length; i++) {
             const bData = dataB.find(value => value[0] === dataA[i][0])
@@ -331,25 +331,27 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
             bNames.forEach(bName => {
                 const bData = dataB.find(value => value[0] === bName)
                 if (bData) {
-                    let row = []
+                    let row = [bData[0]]
                     for (const availableColumn of availableColumns) {
                         row.push("")
                     }
-                    row = row.concat(bData)
+                    row = row.concat(bData.slice(1))
                     dataA.push(row)
                 }
             })
         }
-        columns.push('势力差')
-        columns.push('战功差')
-        columns.push('助攻差')
-        columns.push('攻势比')
+        columns = [columns[0]].concat(['势力差', '战功差', '助攻差', '攻势比']).concat(columns.slice(1))
         for (let i = 0; i < dataA.length; i++) {
             if (dataA[i][13] && dataA[i][5]) {
-                dataA[i].push(String(Number.parseInt(dataA[i][13]) - Number.parseInt(dataA[i][5])))
-                dataA[i].push(String(Number.parseInt(dataA[i][11]) - Number.parseInt(dataA[i][3])))
-                dataA[i].push(String(Number.parseInt(dataA[i][12]) - Number.parseInt(dataA[i][4])))
-                dataA[i].push(String(((Number.parseInt(dataA[i][17]) + Number.parseInt(dataA[i][18])) / Number.parseInt(dataA[i][13])).toFixed(2)))
+                const latestLife = Number.parseInt(dataA[i][13])
+                const life = String(latestLife - Number.parseInt(dataA[i][5]))
+                const power = Number.parseInt(dataA[i][11]) - Number.parseInt(dataA[i][3])
+                const helpPower = Number.parseInt(dataA[i][12]) - Number.parseInt(dataA[i][4])
+                const result = String(((power + helpPower) / latestLife).toFixed(2))
+                const newColumns = [life, power.toFixed(0), helpPower.toFixed(0), result]
+                dataA[i] = [dataA[i][0]].concat(newColumns).concat(dataA[i].slice(1))
+            } else {
+                dataA[i] = [dataA[i][0]].concat(['', '', '', '']).concat(dataA[i].slice(1))
             }
         }
         console.info(dataA)
@@ -358,7 +360,7 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
                 this.renderTable({
                     data: dataA,
                     columns: columns
-                })
+                }, '85vh')
             }
         </div>;
     }
@@ -380,13 +382,13 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
     }
 
     // https://handsontable.com/docs/react-data-grid/
-    private renderTable(source: { data: string[][]; columns: string[] }) {
+    private renderTable(source: { data: string[][]; columns: string[] }, height = 'auto') {
         return <HotTable
             data={source.data}
             colHeaders={source.columns}
             language={zhCN.languageCode}
             width={'auto'}
-            height={'auto'}
+            height={height}
             rowHeaders={true}
             colWidths={100}
             manualColumnResize={true}
@@ -478,26 +480,6 @@ export class CheckerContainer extends React.PureComponent<IProps, IState> {
         </div>;
     }
 
-    private renderDebugInfo(headers: string[], data: string[][]) {
-        // 渲染表格
-        const outputHtml = `
-                        <thead>
-                          <tr>
-                            ${headers.map(header => `<th>${header}</th>`).join('')}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          ${data.map(row => `
-                            <tr>
-                              ${row.map(cell => `<td>${cell}</td>`).join('')}
-                            </tr>
-                          `).join('')}
-                        </tbody>
-                    `;
-        this.setState({
-            csvResult: outputHtml
-        })
-    }
 
     private getStartTimeOptions(timelines: string[]) {
         return timelines.sort((a, b) => {
