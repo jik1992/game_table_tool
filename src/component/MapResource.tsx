@@ -67,12 +67,18 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                 style={{
                     width: 200
                 }}
-                options={[{
+                options={[
+                    {
                     value: '官渡之战',
                     label: `官渡之战`,
-                }]}
+                }, {
+                    value: '奇门八阵',
+                    label: `奇门八阵`,
+                },
+                ]}
                 onSelect={async (e) => {
-                    const x = await axios.get(`/map/${e}.csv`)
+                    const url=`/map/${e}.csv`
+                    const x = await axios.get(url)
                     const rows = []
                     let header = false
                     for (const x1 of x.data.split('\n')) {
