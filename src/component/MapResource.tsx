@@ -62,8 +62,8 @@ export class MapResource extends React.PureComponent<IProps, IState> {
     hotTableRef2 = React.createRef<HotTableClass>()
 
     private exportToCsv = () => {
-        if (this.hotTableRef.current) {
-            const hot = this.hotTableRef.current.hotInstance;
+        if (this.hotTableRef2.current) {
+            const hot = this.hotTableRef2.current.hotInstance;
             if (hot) {
                 const exportPlugin = hot.getPlugin('exportFile');
                 const blob = exportPlugin.exportAsBlob('csv')
@@ -72,7 +72,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                     // Browsers that support HTML5 download attribute
                     const url = URL.createObjectURL(blob);
                     link.setAttribute('href', url);
-                    link.setAttribute('download', 'export.csv');
+                    link.setAttribute('download', '资源分配.csv');
                     link.style.visibility = 'hidden';
                     document.body.appendChild(link);
                     link.click();
@@ -228,9 +228,6 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                 }}>
                                     计算距离
                                 </Button>
-                                <Button onClick={this.exportToCsv}>
-                                    export csv
-                                </Button>
                                 <Button onClick={this.save}>
                                     save owner {'>>'}
                                 </Button>
@@ -269,6 +266,9 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                         owner: ownerAll
                                     })
                                 }}>{'<<'}save owner</Button>
+                                <Button onClick={this.exportToCsv}>
+                                    export csv
+                                </Button>
                             </div>
                         </div>
                     </>
