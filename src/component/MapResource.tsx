@@ -59,6 +59,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
     }
 
     hotTableRef = React.createRef<HotTableClass>()
+    hotTableRef2 = React.createRef<HotTableClass>()
 
     private exportToCsv = () => {
         if (this.hotTableRef.current) {
@@ -114,11 +115,9 @@ export class MapResource extends React.PureComponent<IProps, IState> {
             map: this.state.originalMap,
             ownerAll
         })
-        this.setState(
-            {
-                owner: ownerAll
-            }
-        )
+        this.setState({
+            owner: ownerAll
+        })
     };
 
     private calculateDistance(point1: { x: number, y: number }, point2: { x: number, y: number }) {
@@ -237,7 +236,39 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                 </Button>
                             </div>
                             <div>
-                                <Button>{'<<'}save owner</Button>
+                                <Button onClick={async () => {
+                                    const ownerAll = []
+                                    if (this.hotTableRef2.current) {
+                                        const hot = this.hotTableRef2.current.hotInstance;
+                                        if (hot) {
+                                            const exportPlugin = hot.getPlugin('exportFile');
+                                            const csv = exportPlugin.exportAsString('csv', {
+                                                columnDelimiter: '^_^'
+                                            })
+                                            for (const row of csv.split("\n")) {
+                                                const co = row.split("^_^")
+                                                if (!_.isEmpty(co[1])) {
+                                                    const x = Number.parseInt(co[1].split(",")[0])
+                                                    const y = Number.parseInt(co[1].split(",")[1])
+                                                    const owner = co[0]
+                                                    if (!_.isEmpty(owner)) {
+                                                        ownerAll.push({
+                                                            x, y, owner
+                                                        })
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    await del('owner')
+                                    await set('owner', {
+                                        map: this.state.originalMap,
+                                        ownerAll
+                                    })
+                                    this.setState({
+                                        owner: ownerAll
+                                    })
+                                }}>{'<<'}save owner</Button>
                             </div>
                         </div>
                     </>
@@ -267,17 +298,18 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                     contextMenu={['copy', 'cut']}
                 />
                 <HotTable
+                    ref={this.hotTableRef2}
                     data={this.state.owner.map(value => {
                         const o = this.state.original.find(newRows => (
                             Number.parseInt(newRows[5]) === value.x && Number.parseInt(newRows[6]) === value.y
                         ))
                         if (o) {
                             o[7] = value.owner
-                            return o
+                            return [value.owner, `${value.x},${value.y}`, o[0], o[1], o[2], o[3], o[4]]
                         }
-                        return []
+                        return ['', '', '', '', '', '', '']
                     })}
-                    colHeaders={['id', '地图', '郡', '等级', '类型', 'x', 'y', '拥有人']}
+                    colHeaders={['拥有人', '坐标', 'id', '地图', '郡', '等级', '类型']}
                     language={zhCN.languageCode}
                     width={'100%'}
                     height={'85vh'}
