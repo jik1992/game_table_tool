@@ -31,6 +31,7 @@ type IState = {
         y: number,
         owner: string
         group: string
+        note: string
     }[]
 };
 
@@ -106,7 +107,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                             }
                         } else {
                             ownerAll.push({
-                                x, y, owner, group
+                                x, y, owner, group, note: ''
                             })
                         }
                     }
@@ -250,9 +251,10 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                                     const y = Number.parseInt(co[2].split(",")[1])
                                                     const owner = co[0]
                                                     const group = co[1]
+                                                    const note = co[3]
                                                     if (!_.isEmpty(owner)) {
                                                         ownerAll.push({
-                                                            x, y, owner, group
+                                                            x, y, owner, group, note
                                                         })
                                                     }
                                                 }
@@ -271,7 +273,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                 <Button onClick={() => {
 
                                 }}>
-                                    生成坐标法令
+                                    生成法令
                                 </Button>
                                 <Button onClick={this.exportToCsv}>
                                     导出表格
@@ -313,11 +315,11 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                         if (o) {
                             o[7] = value.owner
                             o[8] = value.group
-                            return [value.group, value.owner, `${value.x},${value.y}`, o[0], o[1], o[2], o[3], o[4]]
+                            return [value.group, value.owner, `${value.x},${value.y}`, value.note, o[0], o[1], o[2], o[3], o[4]]
                         }
                         return ['', '', '', '', '', '', '']
                     })}
-                    colHeaders={['分组', '拥有人', '坐标', 'id', '地图', '郡', '等级', '类型']}
+                    colHeaders={['分组', '拥有人', '坐标', '活动', 'id', '地图', '郡', '等级', '类型']}
                     language={zhCN.languageCode}
                     width={'100%'}
                     height={'85vh'}
