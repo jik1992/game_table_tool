@@ -23,6 +23,7 @@ type IProps = {};
 type IState = {
     destination: string,
     originalMap: string,
+    filerType: 'gold' | 'rice',
     original: any[][]
     rows: any[][]
     owner: {
@@ -36,6 +37,7 @@ type IState = {
 export class MapResource extends React.PureComponent<IProps, IState> {
 
     state: IState = {
+        filerType: 'gold',
         originalMap: '',
         original: [],
         rows: [],
@@ -45,7 +47,6 @@ export class MapResource extends React.PureComponent<IProps, IState> {
 
     componentDidMount = async () => {
         const obj = await get('owner')
-        console.info(111, obj)
         if (obj) {
             this.setState({
                 owner: obj.ownerAll,
@@ -131,75 +132,118 @@ export class MapResource extends React.PureComponent<IProps, IState> {
         const {rows} = this.state
         const datas = _.isEmpty(this.state.rows) ? this.state.original : this.state.rows
         return <>
-            <Select
-                popupMatchSelectWidth={true}
-                style={{
-                    width: 200
-                }}
-                options={[
-                    {
-                        value: '官渡之战',
-                        label: `官渡之战`,
-                    }, {
-                        value: '奇门八阵',
-                        label: `奇门八阵`,
-                    },
-                ]}
-                onSelect={async (e) => {
-                    await this.loadMapResource(e);
-                }}
-            />
-            <Input style={{width: 100}} value={this.state.destination} onChange={(e) => {
-                const value = e.target.value
-                this.setState({
-                    destination: value
-                })
-            }}
-                   placeholder={'602,689'}
-            />
-            <Select
-                defaultValue={'铜矿'}
-                options={[
-                    {
-                        key: 'gold',
-                        label: '铜矿',
-                    }, {
-                        key: 'rice',
-                        label: '粮食',
-                    },
-                ]}
-            />
-            <Button onClick={() => {
-                const point = this.getPointInput();
-                if (point) {
-                    let newRows = _.cloneDeep(this.state.original)
-                    for (let i = 0; i < newRows.length; i++) {
-                        const cPoint = {
-                            x: Number.parseInt(newRows[i][5]),
-                            y: Number.parseInt(newRows[i][6]),
-                        }
-                        const d = this.calculateDistance(point, cPoint)
-                        newRows[i][8] = d
-                    }
-                    newRows = newRows.filter(values => _.isEmpty(values[7])).sort(
-                        (a, b) => {
-                            if (a[8] === b[8]) return 0;
-                            return a[8] > b[8] ? 1 : -1
-                        }
-                    )
-                    this.setState({
-                        rows: newRows
-                    })
-                }
-            }}>
-                计算距离
-            </Button>
-            <Button onClick={this.exportToCsv}>
-                export csv
-            </Button>
-            <Button onClick={this.save}>
-                export owner {'>>'}
-            </Button>
+
+
+            {
+                _.isEmpty(this.state.originalMap) ? (
+                    <Select
+                        popupMatchSelectWidth={true}
+                        style={{
+                            width: 200
+                        }}
+                        options={[
+                            {
+                                value: '官渡之战',
+                                label: `官渡之战`,
+                            }, {
+                                value: '奇门八阵',
+                                label: `奇门八阵`,
+                            },
+                        ]}
+                        onSelect={async (e) => {
+                            await this.loadMapResource(e);
+                        }}
+                    />
+                ) : (
+                    <>
+                        <div style={{
+                            display: "inline-flex",
+                            width: '100%',
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                        }}>
+                            <div>
+                                <Input
+                                    style={{width: 100}} value={this.state.destination}
+                                    onChange={(e) => {
+                                        const value = e.target.value
+                                        this.setState({
+                                            destination: value
+                                        })
+                                    }}
+                                    placeholder={'602,689'}
+                                />
+                                <Select
+                                    value={this.state.filerType}
+                                    options={[
+                                        {
+                                            value: 'gold',
+                                            label: '铜矿',
+                                        }, {
+                                            value: 'rice',
+                                            label: '粮食',
+                                        },
+                                    ]}
+                                    onChange={e => {
+                                        this.setState({
+                                            filerType: e as any
+                                        })
+                                    }}
+                                />
+                                <Button onClick={() => {
+                                    const point = this.getPointInput();
+                                    if (point) {
+                                        let newRows = _.cloneDeep(this.state.original)
+                                        for (let i = 0; i < newRows.length; i++) {
+                                            const cPoint = {
+                                                x: Number.parseInt(newRows[i][5]),
+                                                y: Number.parseInt(newRows[i][6]),
+                                            }
+                                            const d = this.calculateDistance(point, cPoint)
+                                            newRows[i][8] = d
+                                        }
+                                        newRows = newRows.filter(values => {
+                                            if (!_.isEmpty(this.state.filerType)) {
+                                                if (this.state.filerType === "gold" && values[4] !== '铜') {
+                                                    return false
+                                                }
+                                                if (this.state.filerType === "rice" && values[4] === '粮') {
+                                                    return false
+                                                }
+                                            }
+                                            if (_.isEmpty(values[7])) return true;
+                                            const x = this.state.owner.find(o => (
+                                                o.x === Number.parseInt(values[5]) && o.y === Number.parseInt(values[6])
+                                            ))
+                                            return !x
+                                        }).sort(
+                                            (a, b) => {
+                                                if (a[8] === b[8]) return 0;
+                                                return a[8] > b[8] ? 1 : -1
+                                            }
+                                        )
+                                        this.setState({
+                                            rows: newRows
+                                        })
+                                    }
+                                }}>
+                                    计算距离
+                                </Button>
+                                <Button onClick={this.exportToCsv}>
+                                    export csv
+                                </Button>
+                                <Button onClick={this.save}>
+                                    save owner {'>>'}
+                                </Button>
+                            </div>
+                            <div>
+                                <Button>{'<<'}save owner</Button>
+                            </div>
+                        </div>
+                    </>
+                )
+            }
+
             <div style={{
                 display: "inline-flex",
                 width: '100%'
