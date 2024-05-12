@@ -8,9 +8,10 @@ import 'handsontable/dist/handsontable.full.min.css';
 
 import {registerAllModules} from 'handsontable/registry';
 import {registerLanguageDictionary, zhCN} from 'handsontable/i18n';
-import {Select} from "antd";
+import {Button, Select} from "antd";
 import axios from "axios";
 import {HotTable} from "@handsontable/react";
+import HotTableClass from "@handsontable/react/hotTableClass";
 
 registerLanguageDictionary(zhCN);
 
@@ -35,6 +36,28 @@ export class MapResource extends React.PureComponent<IProps, IState> {
     componentWillUnmount() {
     }
 
+    hotTableRef = React.createRef<HotTableClass>()
+
+    private exportToCsv = () => {
+        if (this.hotTableRef.current) {
+            const hot = this.hotTableRef.current.hotInstance;
+            if (hot){
+                const exportPlugin = hot.getPlugin('exportFile');
+                const blob = exportPlugin.exportAsBlob('csv')
+                const link = document.createElement('a');
+                if (link.download !== undefined) { // feature detection
+                    // Browsers that support HTML5 download attribute
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', 'export.csv');
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
+        }
+    };
 
     render() {
         const {rows} = this.state
@@ -64,7 +87,11 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                     })
                 }}
             />
+            <Button onClick={this.exportToCsv}>
+                export csv
+            </Button>
             <HotTable
+                ref={this.hotTableRef}
                 data={rows}
                 colHeaders={['id', '地图', '郡', '等级', '类型', 'x', 'y']}
                 language={zhCN.languageCode}
