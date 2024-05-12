@@ -67,7 +67,7 @@ export class App extends React.PureComponent<IProps, IState> {
                         })
                     }}
                 />
-                <span>Design Created by 烽火 ©{new Date().getFullYear()}</span>
+                <span style={{color:"#fff"}}>Design Created by 烽火&情系 ©{new Date().getFullYear()}</span>
             </Header>
             <Content style={{padding: '0 48px', height: 'calc(100vh - 66px)', overflowY: 'auto'}}>
                 {mode === 'check' && <CheckerContainer/>}

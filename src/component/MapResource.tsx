@@ -23,13 +23,14 @@ type IProps = {};
 type IState = {
     destination: string,
     originalMap: string,
-    filerType: 'gold' | 'rice',
     original: any[][]
+    filerType: 'gold' | 'rice',
     rows: any[][]
     owner: {
         x: number,
         y: number,
         owner: string
+        group: string
     }[]
 };
 
@@ -94,16 +95,18 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                     const x = Number.parseInt(co[5])
                     const y = Number.parseInt(co[6].replaceAll("\"", ''))
                     const owner = co[7].replaceAll("\r", '')
+                    const group = co[8].replaceAll("\r", '')
                     if (!_.isEmpty(owner) && owner !== '\r') {
                         const oIndex = ownerAll.findIndex(value => value.x === x && value.y === y)
                         if (oIndex >= 0) {
                             ownerAll[oIndex] = {
                                 ...ownerAll[oIndex],
-                                owner
+                                owner,
+                                group
                             }
                         } else {
                             ownerAll.push({
-                                x, y, owner
+                                x, y, owner, group
                             })
                         }
                     }
@@ -129,10 +132,8 @@ export class MapResource extends React.PureComponent<IProps, IState> {
 
     render() {
         const {rows} = this.state
-        const datas = _.isEmpty(this.state.rows) ? this.state.original : this.state.rows
+        const data = _.isEmpty(this.state.rows) ? this.state.original : this.state.rows
         return <>
-
-
             {
                 _.isEmpty(this.state.originalMap) ? (
                     <Select
@@ -199,7 +200,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                                 y: Number.parseInt(newRows[i][6]),
                                             }
                                             const d = this.calculateDistance(point, cPoint)
-                                            newRows[i][8] = d
+                                            newRows[i][9] = d
                                         }
                                         newRows = newRows.filter(values => {
                                             if (!_.isEmpty(this.state.filerType)) {
@@ -217,8 +218,8 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                             return !x
                                         }).sort(
                                             (a, b) => {
-                                                if (a[8] === b[8]) return 0;
-                                                return a[8] > b[8] ? 1 : -1
+                                                if (a[9] === b[9]) return 0;
+                                                return a[9] > b[9] ? 1 : -1
                                             }
                                         )
                                         this.setState({
@@ -229,7 +230,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                     计算距离
                                 </Button>
                                 <Button onClick={this.save}>
-                                    save owner {'>>'}
+                                    更新 [拥有人]{'>>'}
                                 </Button>
                             </div>
                             <div>
@@ -244,13 +245,14 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                             })
                                             for (const row of csv.split("\n")) {
                                                 const co = row.split("^_^")
-                                                if (!_.isEmpty(co[1])) {
-                                                    const x = Number.parseInt(co[1].split(",")[0])
-                                                    const y = Number.parseInt(co[1].split(",")[1])
+                                                if (!_.isEmpty(co[2])) {
+                                                    const x = Number.parseInt(co[2].split(",")[0])
+                                                    const y = Number.parseInt(co[2].split(",")[1])
                                                     const owner = co[0]
+                                                    const group = co[1]
                                                     if (!_.isEmpty(owner)) {
                                                         ownerAll.push({
-                                                            x, y, owner
+                                                            x, y, owner, group
                                                         })
                                                     }
                                                 }
@@ -265,9 +267,14 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                     this.setState({
                                         owner: ownerAll
                                     })
-                                }}>{'<<'}save owner</Button>
+                                }}>{'<<'}更新 [拥有人]</Button>
+                                <Button onClick={() => {
+
+                                }}>
+                                    生成坐标法令
+                                </Button>
                                 <Button onClick={this.exportToCsv}>
-                                    export csv
+                                    导出表格
                                 </Button>
                             </div>
                         </div>
@@ -281,8 +288,8 @@ export class MapResource extends React.PureComponent<IProps, IState> {
             }}>
                 <HotTable
                     ref={this.hotTableRef}
-                    data={datas}
-                    colHeaders={['id', '地图', '郡', '等级', '类型', 'x', 'y', '拥有人', "计算距离"]}
+                    data={data}
+                    colHeaders={['id', '地图', '郡', '等级', '类型', 'x', 'y', '拥有人', '分组', "距离"]}
                     language={zhCN.languageCode}
                     width={'100%'}
                     height={'85vh'}
@@ -305,11 +312,12 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                         ))
                         if (o) {
                             o[7] = value.owner
-                            return [value.owner, `${value.x},${value.y}`, o[0], o[1], o[2], o[3], o[4]]
+                            o[8] = value.group
+                            return [value.owner, value.group, `${value.x},${value.y}`, o[0], o[1], o[2], o[3], o[4]]
                         }
                         return ['', '', '', '', '', '', '']
                     })}
-                    colHeaders={['拥有人', '坐标', 'id', '地图', '郡', '等级', '类型']}
+                    colHeaders={['拥有人', '分组', '坐标', 'id', '地图', '郡', '等级', '类型']}
                     language={zhCN.languageCode}
                     width={'100%'}
                     height={'85vh'}
@@ -338,7 +346,7 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                 header = true
                 continue
             }
-            rows.push(x1.split(",").concat(""))
+            rows.push(x1.split(",").concat(['', '']))
         }
         this.setState({
             original: rows,
