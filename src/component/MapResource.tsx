@@ -249,8 +249,8 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                                 if (!_.isEmpty(co[2])) {
                                                     const x = Number.parseInt(co[2].split(",")[0])
                                                     const y = Number.parseInt(co[2].split(",")[1])
-                                                    const owner = co[0]
-                                                    const group = co[1]
+                                                    const owner = co[1]
+                                                    const group = co[0]
                                                     const note = co[3]
                                                     if (!_.isEmpty(owner)) {
                                                         ownerAll.push({
@@ -271,7 +271,34 @@ export class MapResource extends React.PureComponent<IProps, IState> {
                                     })
                                 }}>{'<<'}更新 [拥有人]</Button>
                                 <Button onClick={() => {
-
+                                    if (this.hotTableRef2.current) {
+                                        let note = ''
+                                        const rows: any[][] = []
+                                        const groups = new Set<string>()
+                                        const hot = this.hotTableRef2.current.hotInstance;
+                                        if (hot) {
+                                            const exportPlugin = hot.getPlugin('exportFile');
+                                            const csv = exportPlugin.exportAsString('csv', {
+                                                columnDelimiter: '^_^'
+                                            })
+                                            for (const row of csv.split("\n")) {
+                                                const co = row.split("^_^")
+                                                rows.push(co)
+                                                groups.add(co[0].trim())
+                                            }
+                                        }
+                                        groups.forEach(group => {
+                                            note += `${group}：`
+                                            const name = []
+                                            for (const row of rows) {
+                                                if (row[0] === group) {
+                                                    name.push(`${row[1]} ${row[2]}`)
+                                                }
+                                            }
+                                            note += `${name.join(" ")}\n`
+                                        })
+                                        console.info(1111, note)
+                                    }
                                 }}>
                                     生成法令
                                 </Button>
